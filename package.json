@@ -4,7 +4,7 @@
       "description": "personal-manager-services is backend restful APIs for Personal Manager application developed in Angular",
       "main": "app.js",
       "scripts": {
-            "start": "nodemon app.js",
+            "start": "app.js",
             "test": "echo \"Error: no test specified\" && exit 1"
       },
       "author": "Tejram Chafle",
