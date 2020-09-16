@@ -5,7 +5,7 @@ const DeviceSchema = new mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
     user: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Contact',
+        ref: 'User',
         required: true
     },
     model: {
@@ -31,12 +31,23 @@ const DeviceSchema = new mongoose.Schema({
     serial: {
         type: String,
         required: false
+    },
+    firebase_token: {
+        type: String,
+        required: false
+    },
+    // date & time of record creation
+    created_date: {
+        type: Date,
+        required: true
+    },
+    // last date & time of record updation
+    updated_date: {
+        type: Date,
+        default: Date.now,
+        required: true
     }
 });
 
 DeviceSchema.plugin(Paginate);
 const Device = module.exports = mongoose.model('Device', DeviceSchema);
-
-/* module.exports.getUserByUsername = function(username, cb) {
-	Users.findOne({loginid: username}, cb);
-} */

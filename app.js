@@ -110,6 +110,8 @@ app.use('/timesheet', require('./routes/timesheet'));
 app.use('/grocery', require('./routes/grocery'));
 app.use('/events', require('./routes/events'));
 
+// Service to save device token and push notification
+app.use('/push', require('./routes/push'));
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
