@@ -1,6 +1,6 @@
 var createError = require('http-errors');
 var express = require('express');
-var favicon = require('serve-favicon');
+// var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cors = require('cors');
 var bodyParser = require('body-parser');
