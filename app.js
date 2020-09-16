@@ -27,7 +27,7 @@ process.env.JWT_ACCESS_KEY = 'WizBee';
 
 app.get('/', (req, res)=> {
     console.log('Testing API');
-    res.send('API working!');
+    res.send('Personal Manager V3 APIs working!');
 });
 
 /*var mongoose = require('mongoose');
@@ -40,7 +40,7 @@ mongoose.connect('mongodb://localhost/excavator')
     .catch((err) => console.error(err)); */
 
 var mongoose = require('mongoose');
-mongoose.connect(process.env.DB_URI)
+mongoose.connect(process.env.DB_URI, { useNewUrlParser: true })
     .then(() => console.log('connection succesful'))
     .catch((err) => console.error(err));
 
