@@ -19,11 +19,11 @@ var app = express();
 // ------------------------------------------------------------------------------------
 // Start Server & Listen Port
 // ------------------------------------------------------------------------------------
-const PORT = 3000;
+/*const PORT = 3000;
 app.listen(PORT, () => console.log(`Express server currently running on port ${PORT}`));
 
 // SET the access key
-process.env.JWT_ACCESS_KEY = 'WizBee';
+process.env.JWT_ACCESS_KEY = 'WizBee';*/
 
 /*app.get('/', (req, res)=> {
     console.log('Testing API');
