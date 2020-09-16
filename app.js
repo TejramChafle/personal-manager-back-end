@@ -25,7 +25,7 @@ app.listen(PORT, () => console.log(`Express server currently running on port ${P
 // SET the access key
 process.env.JWT_ACCESS_KEY = 'WizBee';
 
-app.get('/api', (req, res)=> {
+app.get('/', (req, res)=> {
     console.log('Testing API');
     res.send('API working!');
 });
