@@ -25,10 +25,10 @@ app.listen(PORT, () => console.log(`Express server currently running on port ${P
 // SET the access key
 process.env.JWT_ACCESS_KEY = 'WizBee';
 
-app.get('/', (req, res)=> {
+/*app.get('/', (req, res)=> {
     console.log('Testing API');
     res.send('Personal Manager V3 APIs working!');
-});
+});*/
 
 /*var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/excavator')
