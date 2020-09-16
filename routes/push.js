@@ -37,7 +37,7 @@ router.post('/save-device-information', auth, (req, resp) => {
     });
 
     device.save().then(result => {
-        console.log(result);
+        console.log('Device:', result);
 
         // Get the user detail
         User.findOne({_id: req.body.user}).then((user)=> {
@@ -47,7 +47,7 @@ router.post('/save-device-information', auth, (req, resp) => {
                 devices.push(result._id);
                 console.log('devices : ', devices);
             }
-            User.findOneAndUpdate({_id: req.body.user}, { devices })..then((userdevicesresult)=> {
+            User.findOneAndUpdate({_id: req.body.user}, { devices: devices }).then((userdevicesresult)=> {
                 console.log('userdevicesresult : ', userdevicesresult);
                 if (userdevicesresult) {
                     return resp.status(201).json({
