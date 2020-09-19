@@ -38,7 +38,7 @@ router.post("/login", async (req, resp) => {
     console.log('req.body : ', req.body);
 
     // CHECK if the email & password matches with the password present in db
-    User.findOne({ email: req.body.email, is_active: true }).exec().then(async (user) => {
+    User.findOne({ email: req.body.email, is_active: true }).populate('devices').exec().then(async (user) => {
 
         console.log('user found : ', user);
 
