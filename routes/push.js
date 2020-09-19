@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const Device = require('../models/Device');
 const User = require('../models/User');
+const Event = require('../models/Event');
 const auth = require('../auth');
 const router = express.Router();
 
@@ -55,9 +56,10 @@ router.post('/save-device-information', auth, (req, resp) => {
                     return resp.status(201).json({
                         message: "Device information saved successfully.",
                         user: {
-                            _id: userdevicesresult._id,
+                            id: userdevicesresult._id,
                             name: userdevicesresult.name,
-                            email: userdevicesresult.email
+                            email: userdevicesresult.email,
+                            devices: userdevicesresult.devices
                         }
                     });
                 }
@@ -142,4 +144,27 @@ router.post('/send-notification', auth, (req, resp) => {
     });
 });
 
+
+// Send the notifications to all the users
+sendEventNotifications = () => {
+    console.log('sendEventNotifications called');
+    const curren_date = new Date();
+    console.log('curren_date', curren_date);
+    Event.find({start_time: {$lt: curren_date }}).exec().then(async (events) => {
+        console.log('events in db: ', events);
+
+        if (Array.isArray(events)) {
+            events.forEach((event) => {
+                Device.find({user: event.created_by}).exec().then(async (devices) => {
+                    console.log('devices found for notificatoon', devices);
+                });
+            });
+        }
+
+    }).catch(error => {
+        console.log('Event error :', error);
+    });
+}
+
+module.exports = sendEventNotifications;
 module.exports = router;

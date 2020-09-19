@@ -14,7 +14,7 @@ const EventSchema = new mongoose.Schema({
     },
     // start time
     start_time: {
-        type: String,
+        type: Date,
         required: false
     },
     // end time

@@ -4,6 +4,7 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cors = require('cors');
 var bodyParser = require('body-parser');
+const cron = require("node-cron");
 
 const expressValidator = require('express-validator')
 var path = require('path');
@@ -129,5 +130,18 @@ app.use(function (err, req, res, next) {
     // res.send(err.status); // deprecated
     res.sendStatus(err.status);
 });
+
+const push = require('./routes/push');
+
+// Schedule send notification on every 15 min 
+// cron.schedule("*/1 * * * *", function() {
+//     // push.sendMail();
+//     console.log('This message will be printed every minute : ', new Date());
+// });
+
+// This method will be called every two seconds
+// cron.schedule("*/1 * * * *", function() { 
+//     sendEventNotifications();
+// });
 
 module.exports = app;
