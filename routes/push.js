@@ -78,7 +78,7 @@ router.post('/save-device-information', auth, (req, resp) => {
 // Send notification for testing
 router.post('/send-notification', auth, (req, resp) => {
 
-    Device.distinct({user: req.body.user}).populate('firebase_token').exec().then((devices)=> {
+    Device.find({user: req.body.user}).populate('firebase_token').exec().then((devices)=> {
         console.log(devices);
         if (Array.isArray(devices)) {
             // devices.push(result._id);
