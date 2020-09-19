@@ -96,10 +96,10 @@ router.post('/send-notification', auth, (req, resp) => {
             });
 
             var registrationTokens = [];
-
-            registrationTokens = devices.map((device) => {
+            // Filter out the registration tokens (firebase token) from list of registered devices
+            devices.forEach((device) => {
                 if (device.firebase_token) {
-                    return device.firebase_token;
+                    registrationTokens.push(device.firebase_token);
                 }
             });
 
