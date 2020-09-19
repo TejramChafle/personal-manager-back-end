@@ -87,7 +87,7 @@ router.post('/send-notification', auth, (req, resp) => {
             // -----------------------------------------------------------------------------------    
             // FIREBASE NOTIFICATION
             // -----------------------------------------------------------------------------------
-            var serviceAccount = 'firebase-adminsdk-iqxjy@ng-personal-manager.iam.gserviceaccount.com';
+            var serviceAccount = require('../assets/serviceAccountKey.json');
             admin.initializeApp({
               credential: admin.credential.cert(serviceAccount),
               databaseURL: "https://ng-personal-manager.firebaseio.com"
