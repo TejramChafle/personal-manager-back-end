@@ -84,156 +84,62 @@ router.post('/send-notification', auth, (req, resp) => {
             // devices.push(result._id);
             console.log('devices : ', devices);
             // sendNotificationOnDevice(devices);
-            sendNotificationOnMultipleDevices(devices);
+            // sendNotificationOnMultipleDevices(devices);
 
-            return resp.status(201).json({
-                devices: devices.map((device)=> {
-                    if (device.firebase_token) {
-                        return device.firebase_token;
-                    }
-                })
+            // -----------------------------------------------------------------------------------    
+            // FIREBASE NOTIFICATION
+            // -----------------------------------------------------------------------------------
+            var serviceAccount = require('../assets/serviceAccountKey.json');
+            admin.initializeApp({
+                credential: admin.credential.cert(serviceAccount),
+                databaseURL: "https://ng-personal-manager.firebaseio.com"
             });
-        }
-        /*User.findOneAndUpdate({_id: req.body.user}, { devices: devices }).then((userdevicesresult)=> {
-            console.log('userdevicesresult : ', userdevicesresult);
-            if (userdevicesresult) {
-                return resp.status(201).json({
-                    message: "Device information saved successfully.",
-                    user: {
-                        _id: userdevicesresult._id,
-                        name: userdevicesresult.name,
-                        email: userdevicesresult.email
+
+            var registrationTokens = [];
+
+            registrationTokens = devices.map((device) => {
+                if (device.firebase_token) {
+                    return device.firebase_token;
+                }
+            });
+
+            console.log('registrationTokens : ', registrationTokens);
+
+            var message = {
+                data: {
+                    score: '850',
+                    time: '2:45'
+                },
+                notification: { title: 'Firebase notification!', body: 'Get 23% off on early use of the application. First 500 members will get this discoount for a year with all features and functionalities.' },
+                android: {
+                    notification: {
+                        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Angular_one_color_inverse_logo.svg/1024px-Angular_one_color_inverse_logo.svg.png'
                     }
+                },
+                tokens: registrationTokens
+            };
+
+            // Send a message to the device corresponding to the provided registration token.
+            // Use method admin.messaging().send() for single token
+            // Use method admin.messaging().sendMulticast() for multiple tokens
+
+            admin.messaging().sendMulticast(message)
+                .then((response) => {
+                    // Response is a message ID string.
+                    console.log('Successfully sent message:', response);
+                    return resp.status(201).json({
+                        response: response
+                    });
+                })
+                .catch((error) => {
+                    console.log('Error sending message:', error);
+                    // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
+                    return resp.status(500).json({
+                        error: error
+                    });
                 });
-            }
-
-        })*/
+        }
     });
-
-    /*console.log(req.body);
-    const device = new Device({
-        _id: new mongoose.Types.ObjectId(),
-        ...req.body,
-        created_date: Date.now(),
-        updated_date: Date.now()
-    });
-
-    device.save().then(result => {
-        console.log('Device:', result);
-        // Get the user detail
-        
-    }).catch(error => {
-        console.log('error : ', error);
-        // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
-        return resp.status(500).json({
-            error: error
-        });
-    });*/
 });
-
-
-router.sendNotificationOnDevice = (devices) => {
-    // -----------------------------------------------------------------------------------    
-    // FIREBASE NOTIFICATION
-    // -----------------------------------------------------------------------------------
-    var serviceAccount = require('../assets/serviceAccountKey.json');
-    admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        databaseURL: "https://ng-personal-manager.firebaseio.com"
-    });
-
-    let tokens = [];
-
-    for (var i = 0; i < devices.length; i++) {
-        // check if the firebase token exists in device information
-        if (devices[i]['firebase_token']) {
-            tokens.push()
-        }
-    }
-
-    // This registration token comes from the client FCM SDKs.
-    var registrationToken = devices[i]['firebase_token'];
-
-    var message = {
-        data: {
-            score: '850',
-            time: '2:45'
-        },
-        notification: { title: 'Price drop', body: '2% off all books' },
-        android: {
-            notification: {
-                image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Angular_one_color_inverse_logo.svg/1024px-Angular_one_color_inverse_logo.svg.png'
-            }
-        },
-        token: registrationToken
-    };
-
-    // Send a message to the device corresponding to the provided
-    // registration token.
-    admin.messaging().send(message)
-        .then((response) => {
-            // Response is a message ID string.
-            console.log('Successfully sent message:', response);
-        })
-        .catch((error) => {
-            console.log('Error sending message:', error);
-        });
-    // -----------------------------------------------------------------------------------
-}
-
-sendNotificationOnMultipleDevices = (devices) => {
-    // -----------------------------------------------------------------------------------    
-    // FIREBASE NOTIFICATION
-    // -----------------------------------------------------------------------------------
-    var serviceAccount = require('../assets/serviceAccountKey.json');
-    admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        databaseURL: "https://ng-personal-manager.firebaseio.com"
-    });
-
-    var registrationTokens = [];
-
-    /* for (var i = 0; i < devices.length; i++) {
-        // check if the firebase token exists in device information
-        if (devices[i]['firebase_token']) {
-            tokens.push()
-        }
-    } */
-
-    registrationTokens = devices.map((device)=> {
-        if (device.firebase_token) {
-            return device.firebase_token;
-        }
-    });
-
-    console.log('tokens : ', registrationTokens);
-
-    var message = {
-        data: {
-            score: '850',
-            time: '2:45'
-        },
-        notification: { title: 'Price drop', body: '2% off all books' },
-        android: {
-            notification: {
-                image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Angular_one_color_inverse_logo.svg/1024px-Angular_one_color_inverse_logo.svg.png'
-            }
-        },
-        tokens: registrationTokens
-    };
-
-    // Send a message to the device corresponding to the provided registration token.
-    // Use method admin.messaging().send() for single token
-    // Use method admin.messaging().sendMulticast() for multiple tokens
-
-    admin.messaging().sendMulticast(message)
-        .then((response) => {
-            // Response is a message ID string.
-            console.log('Successfully sent message:', response);
-        })
-        .catch((error) => {
-            console.log('Error sending message:', error);
-        });
-}
 
 module.exports = router;
