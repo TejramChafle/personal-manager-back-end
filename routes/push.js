@@ -1,9 +1,9 @@
-const express     = require('express');
-const mongoose    = require('mongoose');
-const Device      = require('../models/Device');
-const User        = require('../models/User');
-const auth        = require('../auth');
-const router      = express.Router();
+const express = require('express');
+const mongoose = require('mongoose');
+const Device = require('../models/Device');
+const User = require('../models/User');
+const auth = require('../auth');
+const router = express.Router();
 
 var admin = require('firebase-admin');
 
@@ -42,14 +42,14 @@ router.post('/save-device-information', auth, (req, resp) => {
         console.log('Device:', result);
 
         // Get the user detail
-        User.findOne({_id: req.body.user}).then((user)=> {
+        User.findOne({ _id: req.body.user }).then((user) => {
             console.log(user);
             var devices = user.devices;
             if (Array.isArray(devices)) {
                 devices.push(result._id);
                 console.log('devices : ', devices);
             }
-            User.findOneAndUpdate({_id: req.body.user}, { devices: devices }).then((userdevicesresult)=> {
+            User.findOneAndUpdate({ _id: req.body.user }, { devices: devices }).then((userdevicesresult) => {
                 console.log('userdevicesresult : ', userdevicesresult);
                 if (userdevicesresult) {
                     return resp.status(201).json({
@@ -78,48 +78,20 @@ router.post('/save-device-information', auth, (req, resp) => {
 // Send notification for testing
 router.post('/send-notification', auth, (req, resp) => {
 
-    Device.find({user: req.body.user}).exec().then((devices)=> {
+    Device.find({ user: req.body.user }).exec().then((devices) => {
         console.log(devices);
         if (Array.isArray(devices)) {
             // devices.push(result._id);
             console.log('devices : ', devices);
-
-            // -----------------------------------------------------------------------------------    
-            // FIREBASE NOTIFICATION
-            // -----------------------------------------------------------------------------------
-            var serviceAccount = require('../assets/serviceAccountKey.json');
-            admin.initializeApp({
-              credential: admin.credential.cert(serviceAccount),
-              databaseURL: "https://ng-personal-manager.firebaseio.com"
-            });
-
-            // This registration token comes from the client FCM SDKs.
-            var registrationToken = devices[devices.length-1]['firebase_token'];
-
-            var message = {
-              data: {
-                score: '850',
-                time: '2:45'
-              },
-              notification: {title: 'Price drop', body: '2% off all books'},
-              token: registrationToken
-            };
-
-            // Send a message to the device corresponding to the provided
-            // registration token.
-            admin.messaging().send(message)
-              .then((response) => {
-                // Response is a message ID string.
-                console.log('Successfully sent message:', response);
-              })
-              .catch((error) => {
-                console.log('Error sending message:', error);
-              });
-
-            // -----------------------------------------------------------------------------------
+            // sendNotificationOnDevice(devices);
+            sendNotificationOnMultipleDevices(devices);
 
             return resp.status(201).json({
-                devices: devices
+                devices: devices.map((device)=> {
+                    if (device.firebase_token) {
+                        return device.firebase_token;
+                    }
+                })
             });
         }
         /*User.findOneAndUpdate({_id: req.body.user}, { devices: devices }).then((userdevicesresult)=> {
@@ -158,5 +130,110 @@ router.post('/send-notification', auth, (req, resp) => {
         });
     });*/
 });
+
+
+router.sendNotificationOnDevice = (devices) => {
+    // -----------------------------------------------------------------------------------    
+    // FIREBASE NOTIFICATION
+    // -----------------------------------------------------------------------------------
+    var serviceAccount = require('../assets/serviceAccountKey.json');
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        databaseURL: "https://ng-personal-manager.firebaseio.com"
+    });
+
+    let tokens = [];
+
+    for (var i = 0; i < devices.length; i++) {
+        // check if the firebase token exists in device information
+        if (devices[i]['firebase_token']) {
+            tokens.push()
+        }
+    }
+
+    // This registration token comes from the client FCM SDKs.
+    var registrationToken = devices[i]['firebase_token'];
+
+    var message = {
+        data: {
+            score: '850',
+            time: '2:45'
+        },
+        notification: { title: 'Price drop', body: '2% off all books' },
+        android: {
+            notification: {
+                image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Angular_one_color_inverse_logo.svg/1024px-Angular_one_color_inverse_logo.svg.png'
+            }
+        },
+        token: registrationToken
+    };
+
+    // Send a message to the device corresponding to the provided
+    // registration token.
+    admin.messaging().send(message)
+        .then((response) => {
+            // Response is a message ID string.
+            console.log('Successfully sent message:', response);
+        })
+        .catch((error) => {
+            console.log('Error sending message:', error);
+        });
+    // -----------------------------------------------------------------------------------
+}
+
+sendNotificationOnMultipleDevices = (devices) => {
+    // -----------------------------------------------------------------------------------    
+    // FIREBASE NOTIFICATION
+    // -----------------------------------------------------------------------------------
+    var serviceAccount = require('../assets/serviceAccountKey.json');
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        databaseURL: "https://ng-personal-manager.firebaseio.com"
+    });
+
+    var registrationTokens = [];
+
+    /* for (var i = 0; i < devices.length; i++) {
+        // check if the firebase token exists in device information
+        if (devices[i]['firebase_token']) {
+            tokens.push()
+        }
+    } */
+
+    registrationTokens = devices.map((device)=> {
+        if (device.firebase_token) {
+            return device.firebase_token;
+        }
+    });
+
+    console.log('tokens : ', registrationTokens);
+
+    var message = {
+        data: {
+            score: '850',
+            time: '2:45'
+        },
+        notification: { title: 'Price drop', body: '2% off all books' },
+        android: {
+            notification: {
+                image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Angular_one_color_inverse_logo.svg/1024px-Angular_one_color_inverse_logo.svg.png'
+            }
+        },
+        tokens: registrationTokens
+    };
+
+    // Send a message to the device corresponding to the provided registration token.
+    // Use method admin.messaging().send() for single token
+    // Use method admin.messaging().sendMulticast() for multiple tokens
+
+    admin.messaging().sendMulticast(message)
+        .then((response) => {
+            // Response is a message ID string.
+            console.log('Successfully sent message:', response);
+        })
+        .catch((error) => {
+            console.log('Error sending message:', error);
+        });
+}
 
 module.exports = router;
