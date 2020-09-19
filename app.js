@@ -140,8 +140,8 @@ const push = require('./routes/push');
 // });
 
 // This method will be called every two seconds
-// cron.schedule("*/1 * * * *", function() { 
-//     sendEventNotifications();
-// });
+cron.schedule("*/1 * * * *", function() { 
+    sendEventNotifications();
+});
 
 module.exports = app;
