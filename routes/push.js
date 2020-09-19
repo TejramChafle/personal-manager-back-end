@@ -87,13 +87,14 @@ router.post('/send-notification', auth, (req, resp) => {
             // -----------------------------------------------------------------------------------    
             // FIREBASE NOTIFICATION
             // -----------------------------------------------------------------------------------
+            var serviceAccount = 'firebase-adminsdk-iqxjy@ng-personal-manager.iam.gserviceaccount.com';
             admin.initializeApp({
               credential: admin.credential.cert(serviceAccount),
               databaseURL: "https://ng-personal-manager.firebaseio.com"
             });
 
             // This registration token comes from the client FCM SDKs.
-            var registrationToken = devices[0]['firebase-token'];
+            var registrationToken = devices[devices.length-1]['firebase-token'];
 
             var message = {
               data: {
