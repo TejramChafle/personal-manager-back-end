@@ -94,13 +94,14 @@ router.post('/send-notification', auth, (req, resp) => {
             });
 
             // This registration token comes from the client FCM SDKs.
-            var registrationToken = devices[devices.length-1]['firebase-token'];
+            var registrationToken = devices[devices.length-1]['firebase_token'];
 
             var message = {
               data: {
                 score: '850',
                 time: '2:45'
               },
+              notification: {title: 'Price drop', body: '2% off all books'},
               token: registrationToken
             };
 
