@@ -78,7 +78,7 @@ router.post('/save-device-information', auth, (req, resp) => {
 // Send notification for testing
 router.post('/send-notification', auth, (req, resp) => {
 
-    Device.find({user: req.body.user}).populate('firebase_token').exec().then((devices)=> {
+    Device.find({user: req.body.user}).exec().then((devices)=> {
         console.log(devices);
         if (Array.isArray(devices)) {
             // devices.push(result._id);
@@ -93,7 +93,7 @@ router.post('/send-notification', auth, (req, resp) => {
             });
 
             // This registration token comes from the client FCM SDKs.
-            var registrationToken = devices[0];
+            var registrationToken = devices[0]['firebase-token'];
 
             var message = {
               data: {
