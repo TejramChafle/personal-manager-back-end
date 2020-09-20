@@ -8,6 +8,12 @@ const router = express.Router();
 
 var admin = require('firebase-admin');
 
+// Initialize Firebase admin
+var serviceAccount = require('../assets/serviceAccountKey.json');
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: "https://ng-personal-manager.firebaseio.com"
+});
 
 /**
  * @swagger
@@ -147,23 +153,69 @@ router.post('/send-notification', auth, (req, resp) => {
 
 // Send the notifications to all the users
 sendEventNotifications = () => {
-    console.log('sendEventNotifications called');
-    const curren_date = new Date();
-    console.log('curren_date', curren_date);
-    Event.find({start_time: {$lt: curren_date }}).exec().then(async (events) => {
-        console.log('events in db: ', events);
 
+    // We need to send the notification for the events that are scheduled between next 15 min to 30 min
+    var curren_date = new Date();
+    // Add 15 min to current date time
+    const from_time = new Date(curren_date.setMinutes(curren_date.getMinutes() + 15));
+    // Add 30 min to current date time
+    const to_time = new Date(curren_date.setMinutes(curren_date.getMinutes() + 30));
+
+    Event.find({start_time: {$gt: from_time, $lt: to_time }}).exec().then(async (events) => {
         if (Array.isArray(events)) {
             events.forEach((event) => {
                 Device.find({user: event.created_by}).exec().then(async (devices) => {
-                    console.log('devices found for notificatoon', devices);
+                    // Send the notification of the event to the provided devices
+                    sendNotifications({
+                        devices: devices,
+                        event: event
+                    });
                 });
             });
         }
-
     }).catch(error => {
-        console.log('Event error :', error);
+        console.log('Unable to find events schedules after 15 min and before 30 min with error :', error);
     });
+}
+
+
+function sendNotifications(data) {
+    // -----------------------------------------------------------------------------------    
+    // FIREBASE NOTIFICATION
+    // -----------------------------------------------------------------------------------
+
+    var registrationTokens = [];
+    // Filter out the registration tokens (firebase token) from list of registered devices
+    data.devices.forEach((device) => {
+        if (device.firebase_token) {
+            registrationTokens.push(device.firebase_token);
+        }
+    });
+
+    var message = {
+        data: {
+            event: JSON.stringify(data.event)
+        },
+        notification: { title: data.event.name, body: data.event.description },
+        android: {
+            notification: {
+                image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Angular_one_color_inverse_logo.svg/1024px-Angular_one_color_inverse_logo.svg.png'
+            }
+        },
+        tokens: registrationTokens
+    };
+
+    // Send a message to the device corresponding to the provided registration token.
+    // Use method admin.messaging().send() for single token
+    // Use method admin.messaging().sendMulticast() for multiple tokens
+    admin.messaging().sendMulticast(message)
+        .then((response) => {
+            // Response is a message ID string.
+            // console.log('Successfully sent message:', response);
+        })
+        .catch((error) => {
+            console.log('Failed to send message via firebase push notification with error :', error);
+        });
 }
 
 module.exports = sendEventNotifications;

@@ -1,16 +1,17 @@
 
 // Express
-var express     = require('express');
-var mongoose    = require('mongoose');
-var jwt         = require('jsonwebtoken');
-var bcrypt      = require('bcrypt');
+var express = require('express');
+var mongoose = require('mongoose');
+var jwt = require('jsonwebtoken');
+var bcrypt = require('bcrypt');
+var nodemailer = require('nodemailer');
 
 // Models import
-var User        = require('../models/User');
-var Contact     = require('../models/Contact');
+var User = require('../models/User');
+var Contact = require('../models/Contact');
 
 // Router
-var router      = express.Router();
+var router = express.Router();
 
 
 /**
@@ -93,13 +94,16 @@ router.post("/signup", async (req, resp) => {
             console.log(req.body);
             let user = new User(req.body);
             user._id = new mongoose.Types.ObjectId(),
-            user.created_date = Date.now(),
-            user.updated_date = Date.now();
-            bcrypt.hash(user.password, 10, (err, result)=> {
+                user.created_date = Date.now(),
+                user.updated_date = Date.now();
+            bcrypt.hash(user.password, 10, (err, result) => {
                 console.log('result of hash', result);
                 user.password = result;
                 user.save().then(result => {
                     console.log(result);
+
+                    // Send registration successful mail
+                    sendMail(user);
 
                     // GENERATE jwt token with the expiry time
                     const token = jwt.sign({ email: user.email, id: user._id }, process.env.JWT_ACCESS_KEY, { expiresIn: "24h" });
@@ -124,5 +128,38 @@ router.post("/signup", async (req, resp) => {
         });
     });
 });
+
+// Send Mail function using Nodemailer 
+function sendMail(user) {
+    let mailTransporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+            user: "tchafle24@gmail.com",
+            pass: "mailme240hr"
+        }
+    });
+
+    // Setting credentials 
+    let mailDetails = {
+        from: "contact@hmtrading.biz",
+        to: user.email,
+        subject: "Registration successful",
+        text: "Hi " + user.name + "\nThank you for regestering Personal Manager V3. We welcome you onboard and happy to offer you the wide range of services.\n"
+            + "For any queries, please feel free to write us. We would be happy to help you.\n"
+            + "Thank you.\nRegards, Personal Manager V3\n2305, Silver Oak, Somewhere near road,\nPune\nIndia-411014."
+    };
+
+
+    // Sending Email 
+    mailTransporter.sendMail(mailDetails,
+        function (err, data) {
+            if (err) {
+                console.log("Failed to send an email with error : ", err);
+            } else {
+                console.log('Sent signup email result : ', data);
+                console.log("Email sent successfully.");
+            }
+        });
+}
 
 module.exports = router;

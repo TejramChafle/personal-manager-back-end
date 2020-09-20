@@ -139,9 +139,9 @@ const push = require('./routes/push');
 //     console.log('This message will be printed every minute : ', new Date());
 // });
 
-// This method will be called every two seconds
-// cron.schedule("*/1 * * * *", function() { 
-//     sendEventNotifications();
-// });
+// Send events notification to the user before every 15 min
+cron.schedule("*/15 * * * *", function() {
+    sendEventNotifications();
+});
 
 module.exports = app;

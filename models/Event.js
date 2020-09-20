@@ -19,7 +19,7 @@ const EventSchema = new mongoose.Schema({
     },
     // end time
     end_time: {
-        type: String,
+        type: Date,
         required: false
     },
     // month loop will help to identify if the event will happen on every month on same date & time
