@@ -130,7 +130,7 @@ router.post("/signup", async (req, resp) => {
 });
 
 // Send Mail function using Nodemailer 
-function sendMail(user) {
+async function sendMail(user) {
     /* let mailTransporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
@@ -149,8 +149,8 @@ function sendMail(user) {
         port: 587,
         secure: false, // true for 465, false for other ports
         auth: {
-        user: testAccount.user, // generated ethereal user
-        pass: testAccount.pass, // generated ethereal password
+            user: testAccount.user, // generated ethereal user
+            pass: testAccount.pass, // generated ethereal password
         },
     });
 
