@@ -99,18 +99,23 @@ router.post("/signup", async (req, resp) => {
             bcrypt.hash(user.password, 10, (err, result) => {
                 console.log('result of hash', result);
                 user.password = result;
-                user.save().then(result => {
-                    console.log(result);
+                user.save().then(registeredUser => {
+                    console.log(registeredUser);
 
                     // Send registration successful mail
-                    sendMail(user);
+                    sendMail(registeredUser);
 
                     // GENERATE jwt token with the expiry time
-                    const token = jwt.sign({ email: user.email, id: user._id }, process.env.JWT_ACCESS_KEY, { expiresIn: "24h" });
+                    const token = jwt.sign({ email: registeredUser.email, id: registeredUser._id }, process.env.JWT_ACCESS_KEY, { expiresIn: "24h" });
 
                     return resp.status(201).json({
                         message: 'User account created successfully.',
-                        user: result,
+                        user: {
+                            id: registeredUser._id,
+                            email: registeredUser.email,
+                            name: registeredUser.name,
+                            devices: registeredUser.devices
+                        },
                         token: token
                     });
                 }).catch(error => {

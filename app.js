@@ -111,6 +111,9 @@ app.use('/timesheet', require('./routes/timesheet'));
 app.use('/grocery', require('./routes/grocery'));
 app.use('/events', require('./routes/events'));
 
+app.use('/employees', require('./routes/employees'));
+app.use('/surveys', require('./routes/surveys'));
+
 // Service to save device token and push notification
 app.use('/push', require('./routes/push'));
 
