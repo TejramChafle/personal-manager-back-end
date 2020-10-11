@@ -1,23 +1,31 @@
 const mongoose = require('mongoose');
 const Paginate = require('mongoose-paginate');
 
-const EmployeeAuthorizationSchema = new mongoose.Schema({
+const EmployeeAreaSchema = new mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
-    role: {
+    house: {
         type: String,
         required: false
     },
-    username: {
-        type: Date,
-        required: false
-    },
-    password: {
+    landmark: {
         type: String,
         required: false
     },
-    is_active: {
-        type: Boolean,
-        default: true
+    state: {
+        type: String,
+        required: true
+    },
+    city: {
+        type: String,
+        required: true
+    },
+    country: {
+        type: String,
+        required: false
+    },
+    postal_code: {
+        type: String,
+        default: false
     },
     // created by user id
     created_by: {
@@ -44,5 +52,5 @@ const EmployeeAuthorizationSchema = new mongoose.Schema({
     }
 });
 
-EmployeeAuthorizationSchema.plugin(Paginate);
-const EmployeeAuthorization = module.exports = mongoose.model('EmployeeAuthorization', EmployeeAuthorizationSchema);
+EmployeeAreaSchema.plugin(Paginate);
+const EmployeeArea = module.exports = mongoose.model('EmployeeArea', EmployeeAreaSchema);

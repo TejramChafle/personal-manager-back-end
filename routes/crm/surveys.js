@@ -1,7 +1,7 @@
 var express     = require('express');
 var mongoose    = require('mongoose');
-var Survey     = require('../models/Survey');
-const auth      = require('../auth');
+var Survey      = require('../../models/crm/Survey/Survery');
+const auth      = require('../../auth');
 
 var router      = express.Router();
 

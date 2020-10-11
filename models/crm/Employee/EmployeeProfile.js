@@ -1,31 +1,29 @@
 const mongoose = require('mongoose');
 const Paginate = require('mongoose-paginate');
 
-const EmployeeAreaSchema = new mongoose.Schema({
+const EmployeeProfileSchema = new mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
-    house: {
+    department: {
         type: String,
         required: false
     },
-    landmark: {
+    designation: {
         type: String,
         required: false
     },
-    state: {
-        type: String,
-        required: true
+    date_of_joining: {
+        type: Date,
+        required: false
     },
-    city: {
-        type: String,
-        required: true
+    supervisor: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Employee',
+        required: false
     },
-    country: {
-        type: String,
-        required: true
-    },
-    postal_code: {
-        type: String,
-        default: false
+    area: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'EmployeeArea',
+        required: false
     },
     // created by user id
     created_by: {
@@ -52,5 +50,5 @@ const EmployeeAreaSchema = new mongoose.Schema({
     }
 });
 
-EmployeeAreaSchema.plugin(Paginate);
-const EmployeeArea = module.exports = mongoose.model('EmployeeArea', EmployeeAreaSchema);
+EmployeeProfileSchema.plugin(Paginate);
+const EmployeeProfile = module.exports = mongoose.model('EmployeeProfile', EmployeeProfileSchema);

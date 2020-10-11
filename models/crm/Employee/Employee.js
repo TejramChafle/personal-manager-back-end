@@ -1,29 +1,53 @@
 const mongoose = require('mongoose');
 const Paginate = require('mongoose-paginate');
 
-const EmployeeProfileSchema = new mongoose.Schema({
+const EmployeeSchema = new mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
-    department: {
-        type: String,
-        required: false
-    },
-    designation: {
+    name: {
         type: String,
         required: true
     },
-    date_of_joining: {
+    gender: {
+        type: String,
+        required: true
+    },
+    birthday: {
         type: Date,
         required: false
     },
-    supervisor: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Employee',
+    email: {
+        type: String,
+        match: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+        trim: true,
+        required: false
+    },
+    primary_phone: {
+        type: String,
         required: true
     },
-    area: {
+    alternate_phone: {
+        type: String,
+        required: false
+    },
+    address: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'EmployeeArea',
+        ref: 'EmployeeAddress',
+        required: false
+    },
+    professional: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'EmployeeProfile',
         required: true
+    },
+    authorization: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'EmployeeAuthorization',
+        required: false
+    },
+    // soft delete flag
+    is_active: {
+        type: Boolean,
+        default: true
     },
     // created by user id
     created_by: {
@@ -50,5 +74,5 @@ const EmployeeProfileSchema = new mongoose.Schema({
     }
 });
 
-EmployeeProfileSchema.plugin(Paginate);
-const EmployeeProfile = module.exports = mongoose.model('EmployeeProfile', EmployeeProfileSchema);
+EmployeeSchema.plugin(Paginate);
+const Employee = module.exports = mongoose.model('Employee', EmployeeSchema);

@@ -1,27 +1,25 @@
-var express = require('express');
-var mongoose = require('mongoose');
-var Employee = require('../models/Employee/Employee');
-const auth = require('../auth');
-const EmployeeArea = require('../models/Employee/EmployeeArea');
-const EmployeeProfile = require('../models/Employee/EmployeeProfile');
+const express = require('express');
+const mongoose = require('mongoose');
+const auth = require('../../auth');
+const bcrypt = require('bcrypt');
+const router = express.Router();
 
-var router = express.Router();
+const Employee = require('../../models/crm/Employee/Employee');
+const EmployeeArea = require('../../models/crm/Employee/EmployeeArea');
+const EmployeeProfile = require('../../models/crm/Employee/EmployeeProfile');
+const EmployeeAuthorization = require('../../models/crm/Employee/EmployeeAuthorization');
 
 
 // GET EMPLOYEES (default active) WITH filter, sorting & pagination
 router.get('/', auth, (req, resp) => {
-
+    console.log('req.query: ', req.query);
     let filter = {};
     filter.is_active = req.query.is_active || true;
     if (req.query.name) filter.name = new RegExp('.*' + req.query.name + '.*', 'i');
-    if (req.query.lastname) filter.lastname = new RegExp('.*' + req.query.lastname + '.*', 'i');
-    if (req.query.gender) filter.gender = new RegExp('^' + req.query.gender + '$', 'i');
     if (req.query.primary_phone) filter.primary_phone = new RegExp('.*' + req.query.primary_phone + '.*', 'i');
     if (req.query.alternate_phone) filter.alternate_phone = new RegExp('.*' + req.query.alternate_phone + '.*', 'i');
     if (req.query.email) filter.email = new RegExp('.*' + req.query.email + '.*', 'i');
-    if (req.query.department) filter.department = new RegExp('.*' + req.query.department + '.*', 'i');
-    if (req.query.designation) filter.designation = new RegExp('.*' + req.query.designation + '.*', 'i');
-    // if (req.query.tag) filter.tag = req.query.tag;
+    if (req.query.gender) filter.gender = req.query.gender;
 
     Employee.paginate(filter,
         {
@@ -30,11 +28,11 @@ router.get('/', auth, (req, resp) => {
             limit: parseInt(req.query.limit),
             populate: ['professional', 'authorization']
         }, (error, result) => {
+            console.log('error',error);
             // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
             if (error) return resp.status(500).json({
                 error: error
             });
-
             return resp.status(200).json(result);
         });
 });
@@ -60,14 +58,14 @@ router.get('/:id', auth, (req, resp) => {
 // SAVE EMPLOYEE
 router.post('/', auth, (req, resp) => {
     // First check if the conact with firstname, lastname and mobile number already exists.
-    Employee.findOne({ firstname: req.body.firstname, lastname: req.body.lastname, primary_phone: req.body.primary_phone, is_active: true })
+    Employee.findOne({ name: req.body.personal.name, email: req.body.personal.email, primary_phone: req.body.personal.phone.primary, is_active: true })
         .exec()
         .then(employee => {
             // If the employee with firstname, lastname and mobile number already exists, then return error
             if (employee) {
                 // 409 : Conflict. The request could not be completed because of a conflict.
                 return resp.status(409).json({
-                    message: 'The employee with name ' + req.body.firstname + ' ' + req.body.lastname + ' and mobile number ' + req.body.primary_phone + ' already exist.'
+                    message: 'The employee with name ' + req.body.personal.name + ', email ' + req.body.personal.email + ' and mobile number ' + req.body.personal.phone.primary + ' already exist.'
                 });
             } else {
                 // Since the user doesn't exist, then save the detail
@@ -82,15 +80,15 @@ router.post('/', auth, (req, resp) => {
                 area.created_by = req.body.created_by;
                 area.updated_by = req.body.updated_by;
 
-                area.save().then(arearesult => {
-                    console.log('arearesult', arearesult);
+                area.save().then(areaResult => {
+                    console.log('areaResult', areaResult);
                     // Save profile information
                     const profile_data = {
                         department: req.body.professional.department,
                         designation: req.body.professional.designation,
                         date_of_joining: req.body.professional.dateOfJoining,
                         supervisor: req.body.professional.supervisor,
-                        area: arearesult._id,
+                        area: areaResult._id,
                     }
                     let profile = new EmployeeProfile(profile_data);
                     profile._id = new mongoose.Types.ObjectId();
@@ -99,34 +97,59 @@ router.post('/', auth, (req, resp) => {
                     profile.created_by = req.body.created_by;
                     profile.updated_by = req.body.updated_by;
 
-                    profile.save().then(profileresult => {
-                        console.log(profileresult);
+                    profile.save().then(profileResult => {
+                        console.log('profileResult', profileResult);
                         // Save employee information
-                        const employee_data = {
-                            name: req.body.name,
-                            gender: req.body.gender,
-                            birthday: req.body.birthday,
-                            email: req.body.email,
-                            primary_phone: req.body.primary_phone,
-                            alternate_phone: req.body.alternate_phone,
-                            professional: profileresult._id
-                        }
-                        let employee = new EmployeeProfile(employee_data);
-                        employee._id = new mongoose.Types.ObjectId();
-                        employee.created_date = now;
-                        employee.updated_date = now;
-                        employee.created_by = req.body.created_by;
-                        employee.updated_by = req.body.updated_by;
-                        employee.save().then(employeeesult => {
-                            console.log(employeeesult);
-                            return resp.status(201).json({
-                                message: 'Employee created successfully',
-                                result: employeeesult
+                        const auth_data = {
+                            role: req.body.credentials.role,
+                            username: req.body.credentials.username,
+                            // password: req.body.credentials.password
+                        };
+                        let auth = new EmployeeAuthorization(auth_data);
+                        auth._id = new mongoose.Types.ObjectId();
+                        auth.created_date = now;
+                        auth.updated_date = now;
+                        auth.created_by = req.body.created_by;
+                        auth.updated_by = req.body.updated_by;
+                        // password encryption
+                        bcrypt.hash(req.body.credentials.password, 10, (err, hashResult) => {
+                            console.log('result of hash', hashResult);
+                            auth.password = hashResult;
+                            auth.save().then(authResult => {
+                                console.log('authResult', authResult);
+                                // Save employee information
+                                const employee_data = {
+                                    name: req.body.personal.name,
+                                    gender: req.body.personal.gender,
+                                    birthday: req.body.personal.birthday,
+                                    email: req.body.personal.email,
+                                    primary_phone: req.body.personal.phone.primary,
+                                    alternate_phone: req.body.personal.phone.alternate,
+                                    professional: profileResult._id,
+                                    authorization: authResult._id
+                                };
+                                let employee = new Employee(employee_data);
+                                employee._id = new mongoose.Types.ObjectId();
+                                employee.created_date = now;
+                                employee.updated_date = now;
+                                employee.created_by = req.body.created_by;
+                                employee.updated_by = req.body.updated_by;
+                                employee.save().then(employeeResult => {
+                                    console.log('employeeResult', employeeResult);
+                                    return resp.status(201).json({
+                                        message: 'Employee created successfully.',
+                                        result: employeeResult
+                                    });
+                                }).catch(error => {
+                                    console.log('error : ', error);
+                                    // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
+                                    return resp.status(500).json(error);
+                                });
+                            }).catch(error => {
+                                console.log('error : ', error);
+                                // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
+                                return resp.status(500).json(error);
                             });
-                        }).catch(error => {
-                            console.log('error : ', error);
-                            // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
-                            return resp.status(500).json(error);
                         });
                     }).catch(error => {
                         console.log('error : ', error);

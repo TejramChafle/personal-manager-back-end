@@ -1,9 +1,13 @@
 const mongoose = require('mongoose');
 const Paginate = require('mongoose-paginate');
 
-const EmployeeSchema = new mongoose.Schema({
+const SurveySchema = new mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
-    name: {
+    firstname: {
+        type: String,
+        required: true
+    },
+    lastname: {
         type: String,
         required: true
     },
@@ -11,8 +15,12 @@ const EmployeeSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    birthday: {
-        type: Date,
+    mobile: {
+        type: String,
+        required: true
+    },
+    phone: {
+        type: String,
         required: false
     },
     email: {
@@ -21,27 +29,29 @@ const EmployeeSchema = new mongoose.Schema({
         trim: true,
         required: false
     },
-    primary_phone: {
+    company: {
         type: String,
-        required: true
+        required: false
     },
-    alternate_phone: {
+    designation: {
         type: String,
+        required: false
+    },
+    birthday: {
+        type: Date,
         required: false
     },
     address: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'EmployeeAddress',
+        type: String,
         required: false
     },
-    professional: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'EmployeeProfessional',
-        required: true
+    description: {
+        type: String,
+        required: false
     },
-    authorization: {
+    tag: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'EmployeeAuthorization',
+        ref: 'Tag',
         required: false
     },
     // soft delete flag
@@ -52,13 +62,13 @@ const EmployeeSchema = new mongoose.Schema({
     // created by user id
     created_by: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Employee',
+        ref: 'User',
         required: true
     },
     // last updated by user id
     updated_by: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Employee',
+        ref: 'User',
         required: true
     },
     // date & time of record creation
@@ -74,5 +84,5 @@ const EmployeeSchema = new mongoose.Schema({
     }
 });
 
-EmployeeSchema.plugin(Paginate);
-const Employee = module.exports = mongoose.model('Employee', EmployeeSchema);
+SurveySchema.plugin(Paginate);
+const Survey = module.exports = mongoose.model('Survey', SurveySchema);
