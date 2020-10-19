@@ -1,47 +1,19 @@
 const mongoose = require('mongoose');
 const Paginate = require('mongoose-paginate');
+const bcrypt = require('bcrypt');
 
 const EmployeeSchema = new mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
-    name: {
-        type: String,
+    personal: {
+        type: Object,
         required: true
-    },
-    gender: {
-        type: String,
-        required: true
-    },
-    birthday: {
-        type: Date,
-        required: false
-    },
-    email: {
-        type: String,
-        match: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
-        trim: true,
-        required: false
-    },
-    primary_phone: {
-        type: String,
-        required: true
-    },
-    alternate_phone: {
-        type: String,
-        required: false
-    },
-    address: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'EmployeeAddress',
-        required: false
     },
     professional: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'EmployeeProfile',
-        required: true
+        type: Object,
+        required: false
     },
     authorization: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'EmployeeAuthorization',
+        type: Object,
         required: false
     },
     // soft delete flag
@@ -73,6 +45,11 @@ const EmployeeSchema = new mongoose.Schema({
         required: true
     }
 });
+
+// compare encrypted password with the password saved in db
+EmployeeSchema.methods.comparePassword = function (password) {
+    return bcrypt.compare(password, this.authorization.password);
+}
 
 EmployeeSchema.plugin(Paginate);
 const Employee = module.exports = mongoose.model('Employee', EmployeeSchema);

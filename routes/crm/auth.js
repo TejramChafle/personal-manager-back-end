@@ -37,32 +37,21 @@ router.post("/login", async (req, resp) => {
     console.log('req.body : ', req.body);
 
     // CHECK if the email & password matches with the password present in db
-    EmployeeAuthorization.findOne({ username: req.body.username, is_active: true }).exec().then(async (auth) => {
-        console.log('auth found : ', auth);
+    Employee.findOne({ 'authorization.username': req.body.username, is_active: true }).exec().then(async (user) => {
+        console.log('user) found : ', user);
         // Compare the password to match with the password saved in db
-        if (!await auth.comparePassword(req.body.password)) {
+        if (!await user.comparePassword(req.body.password)) {
             // 401: Unauthorized. Authentication failed to due mismatch in credentials.
             resp.status(401).json({
                 message: 'Authentication failed. Your email or password is incorrect!'
             });
         } else {
             // GENERATE jwt token with the expiry time
-            const token = jwt.sign({ username: auth.username, id: auth._id }, process.env.JWT_ACCESS_KEY, { expiresIn: "24h" });
+            const token = jwt.sign({ username: req.body.username, id: user._id }, process.env.JWT_ACCESS_KEY, { expiresIn: "24h" });
             
-            // Find the logged in user information from
-            Employee.findOne({ authorization: auth._id }).populate('professional').exec().then(async (user) => {
-                console.log('user found : ', user);
-                // TODO: Store the token and other detail in Authentication table
-                resp.status(201).json({
-                    user: user,
-                    auth: auth,
-                    token: token
-                });
-            }).catch(error => {
-                console.log('Login error :', error);
-                resp.status(401).json({
-                    message: 'Authentication failed. Your email address or password is incorrect!'
-                });
+            resp.status(201).json({
+                user: user,
+                token: token
             });
         }
     }).catch(error => {

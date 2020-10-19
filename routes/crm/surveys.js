@@ -23,7 +23,7 @@ router.get('/', auth, (req, resp) => {
 
     if (req.query.property_owner_state) filter['property_owner_address_state.code'] = req.query.property_owner_state;
     
-    Survey.paginate(filter, { sort: { _id: req.query.sort_order }, page: parseInt(req.query.page), limit: parseInt(req.query.limit), populate: 'tag' }, (error, result) => {
+    Survey.paginate(filter, { sort: { _id: req.query.sort_order }, page: parseInt(req.query.page), limit: parseInt(req.query.limit), populate: 'surveyor' }, (error, result) => {
         // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
         if (error) return resp.status(500).json({
             error: error
@@ -56,7 +56,7 @@ router.post('/', auth, (req, resp) => {
     console.log(req.body);
 
     const survey_data = {
-        surveyor: req.body.surveyor.id,
+        surveyor: req.body.surveyor._id,
         property: req.body.property,
         water: req.body.water,
         solar: req.body.solar,
