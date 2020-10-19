@@ -48,7 +48,7 @@ router.post("/login", async (req, resp) => {
         } else {
             // GENERATE jwt token with the expiry time
             const token = jwt.sign({ username: req.body.username, id: user._id }, process.env.JWT_ACCESS_KEY, { expiresIn: "24h" });
-            
+
             resp.status(201).json({
                 user: user,
                 token: token
