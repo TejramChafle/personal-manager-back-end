@@ -11,24 +11,17 @@ router.get('/', auth, (req, resp) => {
 
     let filter = {};
     filter.is_active = req.query.is_active || true;
-    /* if (req.query.firstname) filter.firstname = new RegExp('.*' + req.query.firstname + '.*', 'i');
-    if (req.query.lastname) filter.lastname = new RegExp('.*' + req.query.lastname + '.*', 'i');
-    if (req.query.gender) filter.gender = new RegExp('^' + req.query.gender + '$', 'i');
-    if (req.query.mobile) filter.mobile = new RegExp('.*' + req.query.mobile + '.*', 'i');
-    if (req.query.phone) filter.phone = new RegExp('.*' + req.query.phone + '.*', 'i');
-    if (req.query.email) filter.email = new RegExp('.*' + req.query.email + '.*', 'i');
-    if (req.query.company) filter.company = new RegExp('.*' + req.query.company + '.*', 'i');
-    if (req.query.designation) filter.designation = new RegExp('.*' + req.query.designation + '.*', 'i');
-    if (req.query.tag) filter.tag = req.query.tag; */
-
-    if (req.query.property_owner_state) filter['property_owner_address_state.code'] = req.query.property_owner_state;
+    if (req.query.owner) filter['property.owner.name'] = new RegExp('.*' + req.query.owner + '.*', 'i');
+    if (req.query.city) filter['property.owner.address.city'] = new RegExp('.*' + req.query.city + '.*', 'i');
+    if (req.query.date) filter['created_date'] = req.query.date;
+    if (req.query.date) filter['surveyor._id'] = req.query.surveyor;
+    if (req.query.status) filter['status'] = req.query.status;
     
     Survey.paginate(filter, { sort: { _id: req.query.sort_order }, page: parseInt(req.query.page), limit: parseInt(req.query.limit), populate: 'surveyor' }, (error, result) => {
         // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
         if (error) return resp.status(500).json({
             error: error
         });
-
         return resp.status(200).json(result);
     });
 });
@@ -88,6 +81,7 @@ router.post('/', auth, (req, resp) => {
 
 // UPDATE SURVEY
 router.put('/:id', auth, (req, resp) => {
+    console.log('req.body: ', req.body);
     Survey.findByIdAndUpdate(req.params.id, req.body).exec().then(survey => {
         return resp.status(200).json(survey);
     }).catch(error => {
