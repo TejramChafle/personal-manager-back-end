@@ -15,11 +15,12 @@ router.get('/', auth, (req, resp) => {
     console.log('req.query: ', req.query);
     let filter = {};
     filter.is_active = req.query.is_active || true;
-    if (req.query.name) filter.name = new RegExp('.*' + req.query.name + '.*', 'i');
-    if (req.query.primary_phone) filter.primary_phone = new RegExp('.*' + req.query.primary_phone + '.*', 'i');
-    if (req.query.alternate_phone) filter.alternate_phone = new RegExp('.*' + req.query.alternate_phone + '.*', 'i');
-    if (req.query.email) filter.email = new RegExp('.*' + req.query.email + '.*', 'i');
-    if (req.query.gender) filter.gender = req.query.gender;
+    if (req.query.name) filter['personal.name'] = new RegExp('.*' + req.query.name + '.*', 'i');
+    if (req.query.primary_phone) filter['professional.phone.primary'] = new RegExp('.*' + req.query.primary_phone + '.*', 'i');
+    if (req.query.alternate_phone) filter['professional.phone.alternate'] = new RegExp('.*' + req.query.alternate_phone + '.*', 'i');
+    if (req.query.email) filter['professional.email'] = new RegExp('.*' + req.query.email + '.*', 'i');
+    if (req.query.city) filter['professional.area.city'] = new RegExp('.*' + req.query.city + '.*', 'i');
+    if (req.query.gender) filter['personal.gender'] = req.query.gender;
 
     Employee.paginate(filter,
         {

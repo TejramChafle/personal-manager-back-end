@@ -8,13 +8,13 @@ var router = express.Router();
 
 // GET SURVEYS (default active) WITH filter, sorting & pagination
 router.get('/', auth, (req, resp) => {
-
+    console.log('req.query: ', req.query);
     let filter = {};
     filter.is_active = req.query.is_active || true;
     if (req.query.owner) filter['property.owner.name'] = new RegExp('.*' + req.query.owner + '.*', 'i');
     if (req.query.city) filter['property.owner.address.city'] = new RegExp('.*' + req.query.city + '.*', 'i');
     if (req.query.date) filter['created_date'] = req.query.date;
-    if (req.query.date) filter['surveyor._id'] = req.query.surveyor;
+    if (req.query.surveyor) filter['surveyor._id'] = req.query.surveyor;
     if (req.query.status) filter['status'] = req.query.status;
     
     Survey.paginate(filter, { sort: { _id: req.query.sort_order }, page: parseInt(req.query.page), limit: parseInt(req.query.limit), populate: 'surveyor' }, (error, result) => {
