@@ -22,6 +22,10 @@ router.get('/', auth, (req, resp) => {
     if (req.query.city) filter['professional.area.city'] = new RegExp('.*' + req.query.city + '.*', 'i');
     if (req.query.gender) filter['personal.gender'] = req.query.gender;
 
+    if (req.query.supervisor) filter['professional.supervisor._id'] = req.query.supervisor;
+
+    console.log(filter);
+
     Employee.paginate(filter,
         {
             sort: { _id: req.query.sort_order },

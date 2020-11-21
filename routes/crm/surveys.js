@@ -14,8 +14,10 @@ router.get('/', auth, (req, resp) => {
     if (req.query.owner) filter['property.owner.name'] = new RegExp('.*' + req.query.owner + '.*', 'i');
     if (req.query.city) filter['property.owner.address.city'] = new RegExp('.*' + req.query.city + '.*', 'i');
     if (req.query.date) filter['created_date'] = req.query.date;
-    if (req.query.surveyor) filter['surveyor._id'] = req.query.surveyor;
+    if (req.query.surveyor) filter['surveyor'] = req.query.surveyor;
     if (req.query.status) filter['status'] = req.query.status;
+
+    console.log('req.filter: ', filter);
     
     Survey.paginate(filter, { sort: { _id: req.query.sort_order }, page: parseInt(req.query.page), limit: parseInt(req.query.limit), populate: 'surveyor' }, (error, result) => {
         // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
