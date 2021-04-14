@@ -103,12 +103,12 @@ app.use('/', express.static(path.join(__dirname, '')));
 
 // Set the route for the incoming request
 app.use('/auth', require('./routes/auth'));
-app.use('/expenditure', require('./routes/expenditure'));
-app.use('/returning', require('./routes/returning'));
-app.use('/task', require('./routes/task'));
+app.use('/expenditures', require('./routes/expenditures'));
+app.use('/returnings', require('./routes/returnings'));
+app.use('/tasks', require('./routes/tasks'));
 app.use('/profile', require('./routes/profile'));
-app.use('/timesheet', require('./routes/timesheet'));
-app.use('/grocery', require('./routes/grocery'));
+app.use('/timesheets', require('./routes/timesheets'));
+app.use('/purchases', require('./routes/purchases'));
 app.use('/events', require('./routes/events'));
 
 app.use('/crm/employees', require('./routes/crm/employees'));

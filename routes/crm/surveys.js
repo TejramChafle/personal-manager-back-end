@@ -8,7 +8,7 @@ var router = express.Router();
 
 // GET SURVEYS (default active) WITH filter, sorting & pagination
 router.get('/', auth, (req, resp) => {
-    console.log('req.query: ', req.query);
+    console.log('req.query: ', req.params);
     let filter = {};
     filter.is_active = req.query.is_active || true;
     if (req.query.owner) filter['property.owner.name'] = new RegExp('.*' + req.query.owner + '.*', 'i');
