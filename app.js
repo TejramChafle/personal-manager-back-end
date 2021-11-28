@@ -6,6 +6,8 @@ var cors = require('cors');
 var bodyParser = require('body-parser');
 const cron = require("node-cron");
 
+const router = require('./routes/router'); 
+
 const expressValidator = require('express-validator')
 var path = require('path');
 // Swagger document
@@ -103,13 +105,22 @@ app.use('/', express.static(path.join(__dirname, '')));
 
 // Set the route for the incoming request
 app.use('/auth', require('./routes/auth'));
-app.use('/expenditures', require('./routes/expenditures'));
+/* app.use('/expenditures', require('./routes/expenditures'));
 app.use('/returnings', require('./routes/returnings'));
+ */
 app.use('/tasks', require('./routes/tasks'));
 app.use('/profile', require('./routes/profile'));
 app.use('/timesheets', require('./routes/timesheets'));
 app.use('/purchases', require('./routes/purchases'));
 app.use('/events', require('./routes/events'));
+
+app.use('/expenditures', router(require('./models/Expenditures')));
+app.use('/returnings', router(require('./models/Billing')));
+/* app.use('/tasks', router(require('./models/Expenditures')));
+app.use('/profile', router(require('./models/Expenditures')));
+app.use('/timesheets', router(require('./models/Expenditures')));
+app.use('/purchases', router(require('./models/Expenditures')));
+app.use('/events', router(require('./models/Expenditures'))); */
 
 app.use('/crm/employees', require('./routes/crm/employees'));
 app.use('/crm/surveys', require('./routes/crm/surveys'));

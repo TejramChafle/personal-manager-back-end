@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Paginate = require('mongoose-paginate');
 
 const BillingSchema = new mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
@@ -81,4 +82,5 @@ const BillingSchema = new mongoose.Schema({
     }
 });
 
+BillingSchema.plugin(Paginate);
 const Billing = module.exports = mongoose.model('Billing', BillingSchema);

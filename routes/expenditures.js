@@ -28,12 +28,15 @@ router.get('/', auth, (req, resp) => {
     if (req.query.place) filter.place = new RegExp('.*' + req.query.place + '.*', 'i');
     if (req.query.date) filter.date = req.query.date;
     if (req.query.createdBy) filter.createdBy = req.query.createdBy;
-
+    filter.payment = { $exists: true, $ne: null};
+    // filter.payment = { 'payment.method': 'PayTM' };
     Expenditures.paginate(filter,{
+        // select: { 'payment': { $exists: true, $ne: null } },
         sort: { createdDate: req.query.sortOrder },
         page: parseInt(req.query.page),
         limit: parseInt(req.query.limit),
-        populate: 'payment' 
+        // populate: { path: 'payment', match: { method: 'Google Pay' } }
+        populate: { path: 'payment', match: {} }
     },(error, result) => {
         // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
         console.log('result', result);
@@ -49,15 +52,15 @@ router.get('/', auth, (req, resp) => {
 
 /**
  * @swagger
- * /attendance:
+ * /expenditure:
  *   post:
  *     tags:
  *       - Expenditure
- *     description: Creates a new attendance
+ *     description: Creates a new expenditure
  *     produces:
  *       - application/json
  *     parameters:
- *       - name: attendance
+ *       - name: expenditure
  *         description: Expenditure object
  *         in: body
  *         required: true
@@ -115,11 +118,11 @@ router.post('/', auth, (req, resp, next) => {
 
 /**
  * @swagger
- * /attendance/{id}:
+ * /expenditure/{id}:
  *   delete:
  *     tags:
  *       - Expenditure
- *     description: Deletes a single attendance
+ *     description: Deletes a single expenditure
  *     produces:
  *       - application/json
  *     parameters:
@@ -132,10 +135,10 @@ router.post('/', auth, (req, resp, next) => {
  *       200:
  *         description: Successfully deleted
  */
-// DELETE EXPENDITURE (Hard delete. This will delete the entire attendance detail. Only application admin should be allowed to perform this action )
+// DELETE EXPENDITURE (Hard delete. This will delete the entire expenditure detail. Only application admin should be allowed to perform this action )
 router.delete('/:id', auth, (req, resp, next) => {
-    Expenditure.findByIdAndRemove(req.params.id).exec().then(attendance => {
-        return resp.status(200).json(attendance);
+    Expenditures.findByIdAndRemove(req.params.id).exec().then(expenditure => {
+        return resp.status(200).json(expenditure);
     }).catch(error => {
         console.log('error : ', error);
         // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.

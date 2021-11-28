@@ -218,5 +218,13 @@ function sendNotifications(data) {
         });
 }
 
-module.exports = sendEventNotifications;
-module.exports = router;
+
+
+// Send the notifications to all the users
+functionCalled = () => {
+    console.log('push functionCalled');
+}
+
+// module.exports = sendEventNotifications;
+module.exports = functionCalled;
+// module.exports = router;

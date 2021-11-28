@@ -34,14 +34,13 @@ var router = express.Router();
  */
 // USER LOGIN
 router.post("/login", async (req, resp) => {
-
-    console.log('User : ', User);
-    console.log('req.body : ', req.body);
+    // console.log('User : ', User);
+    // console.log('req.body : ', req.body);
 
     // CHECK if the email & password matches with the password present in db
     User.findOne({ email: req.body.email, is_active: true }).populate('devices').exec().then(async (user) => {
 
-        console.log('user found : ', user);
+        // console.log('user found : ', user);
 
         // Compare the password to match with the password saved in db
         if (!await user.comparePassword(req.body.password)) {
@@ -75,13 +74,13 @@ router.post("/login", async (req, resp) => {
 // USER SIGNUP
 router.post("/signup", async (req, resp) => {
 
-    console.log('User : ', User);
-    console.log('req.body : ', req.body);
+    // console.log('User : ', User);
+    // console.log('req.body : ', req.body);
 
     // CHECK if the email & password matches with the password present in db
     User.findOne({ email: req.body.email, is_active: true }).populate('user').exec().then(async (user) => {
 
-        console.log('user found : ', user);
+        // console.log('user found : ', user);
 
         // Compare the password to match with the password saved in db
         if (user) {
@@ -126,7 +125,7 @@ router.post("/signup", async (req, resp) => {
             });
         }
     }).catch(error => {
-        console.log('signup error :', error);
+        // console.log('signup error :', error);
         resp.status(401).json({
             message: 'User registration failed.',
             error: error

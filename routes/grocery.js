@@ -1,28 +1,29 @@
-var express = require('express');
-var mongoose = require('mongoose');
-var Contractor = require('../models/Contractor');
-const auth = require('../auth');
-var router = express.Router();
+var express     = require('express');
+var mongoose    = require('mongoose');
+var Fueling     = require('../models/Fueling');
+const auth      = require('../auth');
+
+var router      = express.Router();
 
 /**
  * @swagger
- * /contractor:
+ * /fueling:
  *   get:
  *     tags:
- *       - Contractor
- *     description: Returns all contractors
+ *       - Fueling
+ *     description: Returns all fuelings
  *     security:
  *       - bearerAuth: []
  *     produces:
  *       - application/json
  *     responses:
  *       200:
- *         description: An array of contractors
+ *         description: An array of fuelings
  */
-// GET CONTRACTORS (Only active) WITH filter & pagination
+// GET FUELINGS (Only active) WITH filter & pagination
 router.get('/', auth, (req, resp) => {
-    Contractor.where({ is_active: true }).exec().then(contractors => {
-        return resp.status(200).json(contractors);
+    Fueling.where({ is_active: true }).exec().then(fuelings => {
+        return resp.status(200).json(fuelings);
     }).catch(error => {
         console.log('error : ', error);
         // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
@@ -35,28 +36,28 @@ router.get('/', auth, (req, resp) => {
 
 /**
  * @swagger
- * /contractor/{id}:
+ * /fueling/{id}:
  *   get:
  *     tags:
- *       - Contractor
- *     description: Returns a single contractor
+ *       - Fueling
+ *     description: Returns a single fueling
  *     produces:
  *       - application/json
  *     parameters:
  *       - name: id
- *         description: Contractor's id
+ *         description: Fueling's id
  *         in: path
  *         required: true
  *         type: string
  *     responses:
  *       200:
- *         description: A single contractor
+ *         description: A single fueling
  */
 
-// GET SINGLE CONTRACTOR BY ID
+// GET SINGLE FUELING BY ID
 router.get('/:id', auth, (req, resp, next) => {
-    Contractor.findById(req.params.id).exec().then(contractor => {
-        return resp.status(200).json(contractor);
+    Fueling.findById(req.params.id).exec().then(fueling => {
+        return resp.status(200).json(fueling);
     }).catch(error => {
         console.log('error : ', error);
         // 204 : No content. There is no content to send for this request, but the headers may be useful.
@@ -69,60 +70,64 @@ router.get('/:id', auth, (req, resp, next) => {
 
 /**
  * @swagger
- * /contractor:
+ * /fueling:
  *   post:
  *     tags:
- *       - Contractor
- *     description: Creates a new contractor
+ *       - Fueling
+ *     description: Creates a new fueling
  *     produces:
  *       - application/json
  *     parameters:
- *       - name: contractor
- *         description: Contractor object
+ *       - name: fueling
+ *         description: Fueling object
  *         in: body
  *         required: true
  *         schema:
- *           $ref: '#/definitions/Contractor'
+ *           $ref: '#/definitions/Fueling'
  *     responses:
  *       201:
- *         description: Contractor created successfully
+ *         description: Fueling created successfully
  */
-// SAVE CONTRACTOR
+// SAVE FUELING
 router.post('/', auth, (req, resp, next) => {
-    // First check if the contractor with client id and name already exists.
-    Contractor.findOne({ name: req.body.name, client_id: req.body.client_id, is_active: true })
+    // First check if the fueling with bill number already exists
+    Fueling.findOne({ bill_number: req.body.bill_number, is_active: true })
         .exec()
-        .then(contractor => {
-            // If the contractor with client id and name already exists, then return error
-            if (contractor) {
+        .then(fueling => {
+            // If the fueling with bill number already exists, then return error
+            if (fueling) {
                 // 409 : Conflict. The request could not be completed because of a conflict.
                 return resp.status(409).json({
-                    message: "This contractor with name " + req.body.name + " with this client already exist."
+                    message: "The fueling for bill number " + req.body.bill_number + " is already entered for date " + req.body.date
                 });
             } else {
-                // Since the contractor doesn't exist, then save the detail
+                // Since the fueling doesn't exist, then save the detail
                 console.log(req.body);
-                const contractor = new Contractor({
+                const fueling = new Fueling({
                     _id: new mongoose.Types.ObjectId(),
-                    name: req.body.name,
-                    address: req.body.address,
-                    contact_person: req.body.contact_person,
-                    client_id: req.body.client_id,
-                    email: req.body.email,
-                    phone: req.body.phone,
-                    mobile: req.body.mobile,
-                    description: req.body.description,
+                    fuel: req.body.fuel,
+                    source: req.body.source,
+                    action: req.body.action,
+                    bought_by: req.body.bought_by,
+                    quantity: req.body.quantity,
+                    date: req.body.date,
+                    time: req.body.time,
+                    bill_amount: req.body.bill_amount,
+                    bill_number: req.body.bill_number,
+                    is_paid: req.body.is_paid,
+                    filled_in: req.body.filled_in,
+                    desciption: req.body.desciption,
                     created_by: req.body.created_by,
                     updated_by: req.body.updated_by,
                     created_date: Date.now(),
                     updated_date: Date.now()
                 });
 
-                contractor.save()
+                fueling.save()
                     .then(result => {
                         console.log(result);
                         return resp.status(201).json({
-                            message: "Contractor created successfully",
+                            message: "Fuel bill submitted successfully",
                             result: result
                         });
                     })
@@ -145,27 +150,27 @@ router.post('/', auth, (req, resp, next) => {
 
 /**
 * @swagger
-* /contractor/{id}:
+* /fueling/{id}:
 *   put:
 *     tags:
-*       - Contractor
-*     description: Updates a single contractor
+*       - Fueling
+*     description: Updates a single fueling
 *     produces: application/json
 *     parameters:
-*       name: contractor
+*       name: fueling
 *       in: body
-*       description: Fields for the Contractor resource
+*       description: Fields for the Fueling resource
 *       schema:
 *         type: array
-*         $ref: '#/definitions/Contractor'
+*         $ref: '#/definitions/Fueling'
 *     responses:
 *       200:
 *         description: Successfully updated
 */
-// UPDATE CONTRACTOR
+// UPDATE FUELING
 router.put('/:id', auth, (req, resp, next) => {
-    Contractor.findByIdAndUpdate(req.params.id, req.body).exec().then(contractor => {
-        return resp.status(200).json(contractor);
+    Fueling.findByIdAndUpdate(req.params.id, req.body).exec().then(fueling => {
+        return resp.status(200).json(fueling);
     }).catch(error => {
         // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
         return resp.status(500).json({
@@ -177,16 +182,16 @@ router.put('/:id', auth, (req, resp, next) => {
 
 /**
  * @swagger
- * /contractor/{id}:
+ * /fueling/{id}:
  *   delete:
  *     tags:
- *       - Contractor
- *     description: Deletes a single contractor
+ *       - Fueling
+ *     description: Deletes a single fueling
  *     produces:
  *       - application/json
  *     parameters:
  *       - name: id
- *         description: Contractor's id
+ *         description: Fueling's id
  *         in: path
  *         required: true
  *         type: integer
@@ -194,10 +199,10 @@ router.put('/:id', auth, (req, resp, next) => {
  *       200:
  *         description: Successfully deleted
  */
-// DELETE CONTRACTOR (Hard delete. This will delete the entire contractor detail. Only application admin should be allowed to perform this action )
+// DELETE FUELING (Hard delete. This will delete the entire fueling detail. Only application admin should be allowed to perform this action )
 router.delete('/:id', auth, (req, resp, next) => {
-    Contractor.findByIdAndRemove(req.params.id).exec().then(contractor => {
-        return resp.status(200).json(contractor);
+    Fueling.findByIdAndRemove(req.params.id).exec().then(fueling => {
+        return resp.status(200).json(fueling);
     }).catch(error => {
         console.log('error : ', error);
         // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.

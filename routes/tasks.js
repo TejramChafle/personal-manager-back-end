@@ -1,9 +1,8 @@
-var express     = require('express');
-var mongoose    = require('mongoose');
-var Client     = require('../models/Client');
-const auth      = require('../auth');
-
-var router      = express.Router();
+const express = require('express');
+const mongoose = require('mongoose');
+const Client = require('../models/Client');
+const auth = require('../auth');
+const router = express.Router();
 
 /**
  * @swagger
