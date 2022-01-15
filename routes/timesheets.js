@@ -1,6 +1,6 @@
 var express     = require('express');
 var mongoose    = require('mongoose');
-var FuelResource= require('../models/FuelResource');
+var Timesheet= require('../models/Timesheet');
 const auth      = require('../auth');
 
 var router      = express.Router();
@@ -22,7 +22,7 @@ var router      = express.Router();
  */
 // GET Fuel resources (Only active)
 router.get('/', auth, (req, resp) => {
-    /* FuelResource.where({ is_active: true }).exec().then(resources => {
+    /* Timesheet.where({ is_active: true }).exec().then(resources => {
         return resp.status(200).json(resources);
     }).catch(error => {
         console.log('error : ', error);
@@ -40,7 +40,7 @@ router.get('/', auth, (req, resp) => {
     if (req.query.mobile) filter.place = new RegExp('.*' + req.query.place + '.*', 'i');
     if (req.query.phone) filter.phone = new RegExp('.*' + req.query.phone + '.*', 'i');
 
-    FuelResource.paginate(filter, { sort: { _id: req.query.sort_order }, page: parseInt(req.query.page), limit: parseInt(req.query.limit), populate: ['owner', 'created_by', 'updated_by'] }, (error, result) => {
+    Timesheet.paginate(filter, { sort: { _id: req.query.sort_order }, page: parseInt(req.query.page), limit: parseInt(req.query.limit), populate: ['owner', 'created_by', 'updated_by'] }, (error, result) => {
         // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
         if (error) return resp.status(500).json({
             error: error
@@ -62,7 +62,7 @@ router.get('/', auth, (req, resp) => {
  *       - application/json
  *     parameters:
  *       - name: id
- *         description: FuelResource's id
+ *         description: Timesheet's id
  *         in: path
  *         required: true
  *         type: string
@@ -72,7 +72,7 @@ router.get('/', auth, (req, resp) => {
  */
 // GET SINGLE FUEL RESOURCE BY ID
 router.get('/:id', auth, (req, resp, next) => {
-    FuelResource.findById(req.params.id).exec().then(resource => {
+    Timesheet.findById(req.params.id).exec().then(resource => {
         return resp.status(200).json(resource);
     }).catch(error => {
         console.log('error : ', error);
@@ -99,7 +99,7 @@ router.get('/:id', auth, (req, resp, next) => {
  *         in: body
  *         required: true
  *         schema:
- *           $ref: '#/definitions/FuelResource'
+ *           $ref: '#/definitions/Timesheet'
  *     responses:
  *       201:
  *         description: Fuel resource created successfully
@@ -107,7 +107,7 @@ router.get('/:id', auth, (req, resp, next) => {
 // SAVE FUEL RESOURCE
 router.post('/', auth, (req, resp, next) => {
     // First check if the fuel resource with name already exists
-    FuelResource.findOne({ name: req.body.name, is_active: true })
+    Timesheet.findOne({ name: req.body.name, is_active: true })
         .exec()
         .then(resource => {
             // If the resource with name already exists, then return error
@@ -119,7 +119,7 @@ router.post('/', auth, (req, resp, next) => {
             } else {
                 // Since the user doesn't exist, then save the detail
                 console.log(req.body);
-                const resource = new FuelResource({
+                const resource = new Timesheet({
                     _id:            new mongoose.Types.ObjectId(),
                     name:           req.body.name,
                     place:          req.body.place,
@@ -173,14 +173,14 @@ router.post('/', auth, (req, resp, next) => {
 *       description: Fields for the fuel resource
 *       schema:
 *         type: array
-*         $ref: '#/definitions/FuelResource'
+*         $ref: '#/definitions/Timesheet'
 *     responses:
 *       200:
 *         description: Fuel resource updated successfully
 */
 // UPDATE FUEL RESOURCE
 router.put('/:id', auth, (req, resp, next) => {
-    FuelResource.findByIdAndUpdate(req.params.id, req.body).exec().then(resource => {
+    Timesheet.findByIdAndUpdate(req.params.id, req.body).exec().then(resource => {
         return resp.status(200).json(resource);
     }).catch(error => {
         // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
@@ -212,7 +212,7 @@ router.put('/:id', auth, (req, resp, next) => {
  */
 // DELETE FUEL RESOURCE (Hard delete. This will delete the entire fuel resource detail. Only application admin should be allowed to perform this action )
 router.delete('/:id', auth, (req, resp, next) => {
-    FuelResource.findByIdAndRemove(req.params.id).exec().then(resource => {
+    Timesheet.findByIdAndRemove(req.params.id).exec().then(resource => {
         return resp.status(200).json(resource);
     }).catch(error => {
         console.log('error : ', error);

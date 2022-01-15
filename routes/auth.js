@@ -5,14 +5,11 @@ var mongoose = require('mongoose');
 var jwt = require('jsonwebtoken');
 var bcrypt = require('bcrypt');
 var nodemailer = require('nodemailer');
-
 // Models import
 var User = require('../models/User');
 var Contact = require('../models/Contact');
-
 // Router
 var router = express.Router();
-
 
 /**
  * @swagger
@@ -36,12 +33,9 @@ var router = express.Router();
 router.post("/login", async (req, resp) => {
     // console.log('User : ', User);
     // console.log('req.body : ', req.body);
-
     // CHECK if the email & password matches with the password present in db
     User.findOne({ email: req.body.email, is_active: true }).populate('devices').exec().then(async (user) => {
-
-        // console.log('user found : ', user);
-
+        console.log('user found : ', user);
         // Compare the password to match with the password saved in db
         if (!await user.comparePassword(req.body.password)) {
             // 401: Unauthorized. Authentication failed to due mismatch in credentials.
@@ -51,7 +45,6 @@ router.post("/login", async (req, resp) => {
         } else {
             // GENERATE jwt token with the expiry time
             const token = jwt.sign({ email: user.email, id: user._id }, process.env.JWT_ACCESS_KEY, { expiresIn: "24h" });
-
             // TODO: Store the token and other detail in Authentication table
             resp.status(201).json({
                 user: {
@@ -73,15 +66,11 @@ router.post("/login", async (req, resp) => {
 
 // USER SIGNUP
 router.post("/signup", async (req, resp) => {
-
     // console.log('User : ', User);
     // console.log('req.body : ', req.body);
-
     // CHECK if the email & password matches with the password present in db
     User.findOne({ email: req.body.email, is_active: true }).populate('user').exec().then(async (user) => {
-
         // console.log('user found : ', user);
-
         // Compare the password to match with the password saved in db
         if (user) {
             // 401: Unauthorized. Authentication failed to due mismatch in credentials.
@@ -100,13 +89,10 @@ router.post("/signup", async (req, resp) => {
                 user.password = result;
                 user.save().then(registeredUser => {
                     console.log(registeredUser);
-
                     // Send registration successful mail
                     sendMail(registeredUser);
-
                     // GENERATE jwt token with the expiry time
                     const token = jwt.sign({ email: registeredUser.email, id: registeredUser._id }, process.env.JWT_ACCESS_KEY, { expiresIn: "24h" });
-
                     return resp.status(201).json({
                         message: 'User account created successfully.',
                         user: {
@@ -142,11 +128,9 @@ async function sendMail(user) {
             pass: "working@24"
         }
     }); */
-
     // Generate test SMTP service account from ethereal.email
     // Only needed if you don't have a real mail account for testing
     let testAccount = await nodemailer.createTestAccount();
-
     // create reusable transporter object using the default SMTP transport
     let mailTransporter = nodemailer.createTransport({
         host: "smtp.ethereal.email",
@@ -157,7 +141,6 @@ async function sendMail(user) {
             pass: testAccount.pass, // generated ethereal password
         },
     });
-
     // Setting credentials 
     let mailDetails = {
         from: "contact@hmtrading.biz",
@@ -167,8 +150,6 @@ async function sendMail(user) {
             + "For any queries, please feel free to write us. We would be happy to help you.\n"
             + "Thank you.\nRegards, Personal Manager V3\n2305, Silver Oak, Somewhere near road,\nPune\nIndia-411014."
     };
-
-
     // Sending Email 
     mailTransporter.sendMail(mailDetails,
         function (err, data) {

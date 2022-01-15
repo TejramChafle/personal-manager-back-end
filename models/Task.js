@@ -1,42 +1,48 @@
 const mongoose = require('mongoose');
 const Paginate = require('mongoose-paginate');
 
-const EmployeeAreaSchema = new mongoose.Schema({
+const TaskSchema = new mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
-    house: {
-        type: String,
-        required: false
-    },
-    landmark: {
-        type: String,
-        required: false
-    },
-    state: {
+    name: {
         type: String,
         required: true
     },
-    city: {
-        type: String,
-        required: true
+    contact_person: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Contact',
+        required: false
     },
-    country: {
+    phone: {
         type: String,
         required: false
     },
-    postal_code: {
+    email: {
         type: String,
-        default: false
+        required: false
+    },
+    address: {
+        type: String,
+        required: false
+    },
+    description: {
+        type: String,
+        required: false
+    },
+    // soft delete flag
+    is_active: {
+        type: Boolean,
+        default: true
     },
     // created by user id
     created_by: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Employee',
+        ref: 'Contact',
         required: true
     },
     // last updated by user id
     updated_by: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Employee',
+        ref: 'Contact',
         required: true
     },
     // date & time of record creation
@@ -52,5 +58,9 @@ const EmployeeAreaSchema = new mongoose.Schema({
     }
 });
 
-EmployeeAreaSchema.plugin(Paginate);
-const EmployeeArea = module.exports = mongoose.model('EmployeeArea', EmployeeAreaSchema);
+TaskSchema.plugin(Paginate);
+const Task = module.exports = mongoose.model('Task', TaskSchema);
+
+/* module.exports.getUserByUsername = function(username, cb) {
+	Users.findOne({loginid: username}, cb);
+} */

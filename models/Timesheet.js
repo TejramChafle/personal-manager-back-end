@@ -1,23 +1,39 @@
-const mongoose = require('mongoose');
+var mongoose = require('mongoose');
+const Paginate = require('mongoose-paginate');
 
-const VehicleSchema = new mongoose.Schema({
+var TimesheetSchema = new mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
     name: {
         type: String,
         required: true
     },
-    ownership: {
+    place: {
         type: String,
         required: true
     },
-    type: {
+    owner: {
+        /* type: String,
+        required: true */
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Contact',
+        required: false
+    },
+    phone: {
+        type: String,
+        required: false
+    },
+    /* mobile: {
         type: String,
         required: true
     },
-    number: {
+    contact_person: {
         type: String,
         required: true
     },
+    description: {
+        type: String,
+        required: false
+    }, */
     // soft delete flag
     is_active: {
         type: Boolean,
@@ -26,13 +42,13 @@ const VehicleSchema = new mongoose.Schema({
     // created by user id
     created_by: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'Contact',
         required: true
     },
     // last updated by user id
     updated_by: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'Contact',
         required: true
     },
     // date & time of record creation
@@ -48,4 +64,5 @@ const VehicleSchema = new mongoose.Schema({
     }
 });
 
-const Vehicle = module.exports = mongoose.model('Vehicle', VehicleSchema);
+TimesheetSchema.plugin(Paginate);
+module.exports = mongoose.model('Timesheet', TimesheetSchema);

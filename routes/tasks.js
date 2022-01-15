@@ -1,6 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const Client = require('../models/Client');
+const Task = require('../models/Task');
 const auth = require('../auth');
 const router = express.Router();
 
@@ -9,20 +9,20 @@ const router = express.Router();
  * /client:
  *   get:
  *     tags:
- *       - Client
- *     description: Returns all clients
+ *       - Task
+ *     description: Returns all tasks
  *     security:
  *       - bearerAuth: []
  *     produces:
  *       - application/json
  *     responses:
  *       200:
- *         description: An array of clients
+ *         description: An array of tasks
  */
-// GET CLIENTS (Only active) WITH filter & pagination
+// GET tasks (Only active) WITH filter & pagination
 router.get('/', auth, (req, resp) => {
-    /* Client.where({ is_active: true }).exec().then(clients => {
-        return resp.status(200).json(clients);
+    /* Task.where({ is_active: true }).exec().then(tasks => {
+        return resp.status(200).json(tasks);
     }).catch(error => {
         console.log('error : ', error);
         // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
@@ -38,7 +38,7 @@ router.get('/', auth, (req, resp) => {
     if (req.query.phone) filter.phone = new RegExp('.*' + req.query.phone + '.*', 'i');
     if (req.query.email) filter.email = new RegExp('.*' + req.query.email + '.*', 'i');
 
-    Client.paginate(filter, { sort: { _id: req.query.sort_order }, page: parseInt(req.query.page), limit: parseInt(req.query.limit), populate: ['contact_person', 'created_by', 'updated_by'] }, (error, result) => {
+    Task.paginate(filter, { sort: { _id: req.query.sort_order }, page: parseInt(req.query.page), limit: parseInt(req.query.limit), populate: ['contact_person', 'created_by', 'updated_by'] }, (error, result) => {
         // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
         if (error) return resp.status(500).json({
             error: error
@@ -54,13 +54,13 @@ router.get('/', auth, (req, resp) => {
  * /client/{id}:
  *   get:
  *     tags:
- *       - Client
+ *       - Task
  *     description: Returns a single client
  *     produces:
  *       - application/json
  *     parameters:
  *       - name: id
- *         description: Client's id
+ *         description: Task's id
  *         in: path
  *         required: true
  *         type: string
@@ -71,7 +71,7 @@ router.get('/', auth, (req, resp) => {
 
 // GET SINGLE CLIENT BY ID
 router.get('/:id', auth, (req, resp, next) => {
-    Client.findById(req.params.id).exec().then(client => {
+    Task.findById(req.params.id).exec().then(client => {
         return resp.status(200).json(client);
     }).catch(error => {
         console.log('error : ', error);
@@ -88,25 +88,25 @@ router.get('/:id', auth, (req, resp, next) => {
  * /client:
  *   post:
  *     tags:
- *       - Client
+ *       - Task
  *     description: Creates a new client
  *     produces:
  *       - application/json
  *     parameters:
  *       - name: client
- *         description: Client object
+ *         description: Task object
  *         in: body
  *         required: true
  *         schema:
- *           $ref: '#/definitions/Client'
+ *           $ref: '#/definitions/Task'
  *     responses:
  *       201:
- *         description: Client created successfully
+ *         description: Task created successfully
  */
 // SAVE CLIENT
 router.post('/', auth, (req, resp, next) => {
     // First check if the conact with name and address already exists.
-    Client.findOne({ firstname: req.body.name, address: req.body.address, is_active: true })
+    Task.findOne({ firstname: req.body.name, address: req.body.address, is_active: true })
         .exec()
         .then(client => {
             // If the client with name and address already exists, then return error
@@ -118,7 +118,7 @@ router.post('/', auth, (req, resp, next) => {
             } else {
                 // Since the client doesn't exist, then save the detail
                 console.log(req.body);
-                const client = new Client({
+                const client = new Task({
                     _id: new mongoose.Types.ObjectId(),
                     name: req.body.name,
                     contact_person: req.body.contact_person,
@@ -137,7 +137,7 @@ router.post('/', auth, (req, resp, next) => {
                     .then(result => {
                         console.log(result);
                         return resp.status(201).json({
-                            message: "Client created successfully",
+                            message: "Task created successfully",
                             result: result
                         });
                     })
@@ -163,23 +163,23 @@ router.post('/', auth, (req, resp, next) => {
 * /client/{id}:
 *   put:
 *     tags:
-*       - Client
+*       - Task
 *     description: Updates a single client
 *     produces: application/json
 *     parameters:
 *       name: client
 *       in: body
-*       description: Fields for the Client resource
+*       description: Fields for the Task resource
 *       schema:
 *         type: array
-*         $ref: '#/definitions/Client'
+*         $ref: '#/definitions/Task'
 *     responses:
 *       200:
 *         description: Successfully updated
 */
 // UPDATE CLIENT
 router.put('/:id', auth, (req, resp, next) => {
-    Client.findByIdAndUpdate(req.params.id, req.body).exec().then(client => {
+    Task.findByIdAndUpdate(req.params.id, req.body).exec().then(client => {
         return resp.status(200).json(client);
     }).catch(error => {
         // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
@@ -195,13 +195,13 @@ router.put('/:id', auth, (req, resp, next) => {
  * /client/{id}:
  *   delete:
  *     tags:
- *       - Client
+ *       - Task
  *     description: Deletes a single client
  *     produces:
  *       - application/json
  *     parameters:
  *       - name: id
- *         description: Client's id
+ *         description: Task's id
  *         in: path
  *         required: true
  *         type: integer
@@ -211,7 +211,7 @@ router.put('/:id', auth, (req, resp, next) => {
  */
 // DELETE CLIENT (Hard delete. This will delete the entire client detail. Only application admin should be allowed to perform this action )
 router.delete('/:id', auth, (req, resp, next) => {
-    Client.findByIdAndRemove(req.params.id).exec().then(client => {
+    Task.findByIdAndRemove(req.params.id).exec().then(client => {
         return resp.status(200).json(client);
     }).catch(error => {
         console.log('error : ', error);

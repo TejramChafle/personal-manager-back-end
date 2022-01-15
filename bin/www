@@ -20,24 +20,18 @@ server.listen(port, () => {
 server.on('error', onError);
 server.on('listening', onListening);
 
-// SET the access key
-process.env.JWT_ACCESS_KEY = 'WizBee';
-
 // Normalize a port into a number, string, or false.
 function normalizePort(val) {
     // tslint:disable-next-line: no-shadowed-variable
     const port = parseInt(val, 10);
-
     if (isNaN(port)) {
         // named pipe
         return val;
     }
-
     if (port >= 0) {
         // port number
         return port;
     }
-
     return false;
 };
 
@@ -47,9 +41,7 @@ function onError(error) {
     if (error.syscall !== 'listen') {
         throw error;
     }
-
     const bind = typeof port === 'string' ? 'Pipe ' + port : 'Port ' + port;
-
     // handle specific listen errors with friendly messages
     switch (error.code) {
         case 'EACCES':
