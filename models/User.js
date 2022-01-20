@@ -37,6 +37,10 @@ const UserSchema = mongoose.Schema({
         ref: 'Device',
         required: true
     }],
+    photo: {
+        type: String,
+        required: false
+    },
     // date & time of record creation
     created_date: {
         type: Date,
