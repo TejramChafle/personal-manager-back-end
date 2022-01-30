@@ -3,64 +3,62 @@ const Paginate = require('mongoose-paginate');
 
 const TaskSchema = new mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
-    name: {
+    title: {
         type: String,
         required: true
     },
-    contact_person: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Contact',
-        required: false
-    },
-    phone: {
+    notes: {
         type: String,
         required: false
     },
-    email: {
-        type: String,
+    schedule: {
+        type: Object,
         required: false
     },
-    address: {
-        type: String,
+    labels: [{
+        type: Object,
         required: false
-    },
-    description: {
-        type: String,
-        required: false
-    },
-    // soft delete flag
-    is_active: {
+    }],
+    isStarred: {
         type: Boolean,
-        default: true
+        required: false
+    },
+    isImportant: {
+        type: Boolean,
+        required: false
+    },
+    isDone: {
+        type: Boolean,
+        required: false
     },
     // created by user id
-    created_by: {
+    createdBy: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Contact',
+        ref: 'User',
         required: true
     },
     // last updated by user id
-    updated_by: {
+    updatedBy: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Contact',
+        ref: 'User',
         required: true
     },
     // date & time of record creation
-    created_date: {
+    createdDate: {
         type: Date,
         required: true
     },
     // last date & time of record updation
-    updated_date: {
+    updatedDate: {
         type: Date,
         default: Date.now,
         required: true
     }
-});
+}, { timestamps: true });
 
 TaskSchema.plugin(Paginate);
 const Task = module.exports = mongoose.model('Task', TaskSchema);
 
 /* module.exports.getUserByUsername = function(username, cb) {
-	Users.findOne({loginid: username}, cb);
+    Users.findOne({loginid: username}, cb);
 } */

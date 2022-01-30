@@ -35,7 +35,7 @@ const UserSchema = mongoose.Schema({
     devices: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Device',
-        required: true
+        required: false
     }],
     photo: {
         type: String,

@@ -1,63 +1,74 @@
-var express     = require('express');
-var mongoose    = require('mongoose');
-var Bill        = require('../models/Billing');
-const auth      = require('../auth');
-
-var router      = express.Router();
+const express = require('express');
+const mongoose = require('mongoose');
+const Returning = require('../models/Returnings');
+const auth = require('../auth');
+const router = express.Router();
 
 /**
  * @swagger
- * /bill:
+ * /returning:
  *   get:
  *     tags:
- *       - Bill
- *     description: Returns all bills
+ *       - Returning
+ *     description: Returns all returnings
  *     security:
  *       - bearerAuth: []
  *     produces:
  *       - application/json
  *     responses:
  *       200:
- *         description: An array of bills
+ *         description: An array of returnings
  */
-// GET BILLS (Only active) WITH filter & pagination
+// GET returnings (Only active) WITH filter & pagination
 router.get('/', auth, (req, resp) => {
-    Bill.where({ is_active: true }).exec().then(bills => {
-        return resp.status(200).json(bills);
-    }).catch(error => {
-        console.log('error : ', error);
+    // console.log('req.query', req.query);
+    let filter = {};
+    if (req.query.place) filter.place = new RegExp('.*' + req.query.place + '.*', 'i');
+    if (req.query.date) filter.date = req.query.date;
+    if (req.query.created_by) filter.createdBy = req.query.createdBy;
+    // console.log({filter});
+    Returning.paginate(filter, {
+        sort: { createdDate: req.query.sortOrder },
+        page: parseInt(req.query.page),
+        limit: parseInt(req.query.limit)
+    }, (error, result) => {
         // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
-        return resp.status(500).json({
-            error: error
-        });
+        // console.log('result', result);
+        if (error) {
+            // console.log('error', error);
+            return resp.status(500).json({
+                error: error
+            });
+        }
+        return resp.status(200).json(result);
     });
 });
 
 
 /**
  * @swagger
- * /bill/{id}:
+ * /returning/{id}:
  *   get:
  *     tags:
- *       - Bill
- *     description: Returns a single bill
+ *       - Returning
+ *     description: Returns a single returning
  *     produces:
  *       - application/json
  *     parameters:
  *       - name: id
- *         description: Bill's id
+ *         description: Returning's id
  *         in: path
  *         required: true
  *         type: string
  *     responses:
  *       200:
- *         description: A single bill
+ *         description: A single returning
  */
 
-// GET SINGLE BILL BY ID
+// GET SINGLE returning BY ID
 router.get('/:id', auth, (req, resp, next) => {
-    Bill.findById(req.params.id).exec().then(bill => {
-        return resp.status(200).json(bill);
+    Returning.findById(req.params.id).exec().then(returning => {
+        return resp.status(200).json(returning);
     }).catch(error => {
         console.log('error : ', error);
         // 204 : No content. There is no content to send for this request, but the headers may be useful.
@@ -70,106 +81,81 @@ router.get('/:id', auth, (req, resp, next) => {
 
 /**
  * @swagger
- * /bill:
+ * /returning:
  *   post:
  *     tags:
- *       - Bill
- *     description: Creates a new bill
+ *       - Returning
+ *     description: Creates a new returning
  *     produces:
  *       - application/json
  *     parameters:
- *       - name: bill
- *         description: Bill object
+ *       - name: returning
+ *         description: Returning object
  *         in: body
  *         required: true
  *         schema:
- *           $ref: '#/definitions/Bill'
+ *           $ref: '#/definitions/Returning'
  *     responses:
  *       201:
- *         description: Bill created successfully
+ *         description: Returning created successfully
  */
-// SAVE BILL
+// SAVE returning
 router.post('/', auth, (req, resp, next) => {
-    // TODO: Need to implement functionality to check the works if billed in other bills
-    Bill.findOne({ firstname: req.body.name, address: req.body.address, is_active: true })
-        .exec()
-        .then(bill => {
-            // If the bill with name and address already exists, then return error
-            if (bill) {
-                // 409 : Conflict. The request could not be completed because of a conflict.
-                return resp.status(409).json({
-                    message: "The bill with name " + req.body.name + " and address " + req.body.address + " already exist."
-                });
-            } else {
-                // Since the bill doesn't exist, then save the detail
-                console.log(req.body);
-                const bill = new Bill({
-                    _id: new mongoose.Types.ObjectId(),
-                    works:          req.body.works,
-                    billing_to:     req.body.billing_to,
-                    date:           req.body.date,
-                    sub_total:      req.body.sub_total,
-                    gst_percent:    req.body.gst_percent,
-                    gst_amount:     req.body.gst_amount,
-                    tds_percent:    req.body.tds_percent,
-                    tds_amount:     req.body.tds_amount,
-                    billed_amount:  req.body.billed_amount,
-                    description:    req.body.description,
-                    is_paid:        req.body.is_paid,
-                    created_by:     req.body.created_by,
-                    updated_by:     req.body.updated_by,
-                    created_date:   Date.now(),
-                    updated_date:   Date.now()
-                });
-
-                bill.save()
-                    .then(result => {
-                        console.log(result);
-                        return resp.status(201).json({
-                            message: "Bill created successfully",
-                            result: result
-                        });
-                    })
-                    .catch(error => {
-                        console.log('error : ', error);
-                        // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
-                        return resp.status(500).json({
-                            error: error
-                        });
-                    });
-            }
-        }).catch(error => {
-            console.log('error : ', error);
-            // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
-            return resp.status(500).json({
-                error: error
-            });
+    console.log(req.body);
+    const returning = new Returning({
+        _id: new mongoose.Types.ObjectId(),
+        amount: req.body.amount,
+        date: req.body.date,
+        expectedReturnDate: req.body.expectedReturnDate,
+        paymentMethod: req.body.paymentMethod,
+        person: req.body.person,
+        purpose: req.body.purpose,
+        type: req.body.type,
+        created_by: req.body.createdBy,
+        updated_by: req.body.createdBy,
+        created_date: req.body.createdDate,
+        updated_date: req.body.createdDate
+    });
+    returning.save()
+    .then(result => {
+        console.log(result);
+        return resp.status(201).json({
+            message: "Returning created successfully",
+            result: result
         });
+    })
+    .catch(error => {
+        console.log('error : ', error);
+        // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
+        return resp.status(500).json({
+            error: error
+        });
+    });
 });
 
 /**
 * @swagger
-* /bill/{id}:
+* /returning/{id}:
 *   put:
 *     tags:
-*       - Bill
-*     description: Updates a single bill
+*       - Returning
+*     description: Updates a single returning
 *     produces: application/json
 *     parameters:
-*       name: bill
+*       name: returning
 *       in: body
-*       description: Fields for the Bill resource
+*       description: Fields for the Returning resource
 *       schema:
 *         type: array
-*         $ref: '#/definitions/Bill'
+*         $ref: '#/definitions/Returning'
 *     responses:
 *       200:
 *         description: Successfully updated
 */
-// UPDATE BILL
+// UPDATE returning
 router.put('/:id', auth, (req, resp, next) => {
-    Bill.findByIdAndUpdate(req.params.id, req.body).exec().then(bill => {
-        return resp.status(200).json(bill);
+    Returning.findByIdAndUpdate(req.params.id, req.body).exec().then(returning => {
+        return resp.status(200).json(returning);
     }).catch(error => {
         // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
         return resp.status(500).json({
@@ -181,16 +167,16 @@ router.put('/:id', auth, (req, resp, next) => {
 
 /**
  * @swagger
- * /bill/{id}:
+ * /returning/{id}:
  *   delete:
  *     tags:
- *       - Bill
- *     description: Deletes a single bill
+ *       - Returning
+ *     description: Deletes a single returning
  *     produces:
  *       - application/json
  *     parameters:
  *       - name: id
- *         description: Bill's id
+ *         description: Returning's id
  *         in: path
  *         required: true
  *         type: integer
@@ -198,10 +184,10 @@ router.put('/:id', auth, (req, resp, next) => {
  *       200:
  *         description: Successfully deleted
  */
-// DELETE BILL (Hard delete. This will delete the entire bill detail. Only application admin should be allowed to perform this action )
+// DELETE returning (Hard delete. This will delete the entire returning detail. Only application admin should be allowed to perform this action )
 router.delete('/:id', auth, (req, resp, next) => {
-    Bill.findByIdAndRemove(req.params.id).exec().then(bill => {
-        return resp.status(200).json(bill);
+    Returning.findByIdAndRemove(req.params.id).exec().then(returning => {
+        return resp.status(200).json(returning);
     }).catch(error => {
         console.log('error : ', error);
         // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.

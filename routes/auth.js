@@ -7,7 +7,6 @@ var bcrypt = require('bcrypt');
 var nodemailer = require('nodemailer');
 // Models import
 var User = require('../models/User');
-var Contact = require('../models/Contact');
 // Router
 var router = express.Router();
 const { OAuth2Client } = require('google-auth-library');
@@ -68,33 +67,40 @@ router.post("/login", async (req, resp) => {
 
 // USER SIGNUP
 router.post("/signup", async (req, resp) => {
-    // console.log('User : ', User);
-    // console.log('req.body : ', req.body);
     // CHECK if the email & password matches with the password present in db
-    User.findOne({ email: req.body.email, is_active: true }).populate('user').exec().then(async (user) => {
-        // console.log('user found : ', user);
-        // Compare the password to match with the password saved in db
-        if (user) {
-            // 401: Unauthorized. Authentication failed to due mismatch in credentials.
-            resp.status(409).json({
-                message: 'Email id is already in use. Please login with the provided email!'
-            });
-        } else {
+    User.findOne({ email: req.body.email, is_active: true }).populate('user').exec()
+        .then(async (user) => {
+            // Throw error if user already exist with provided email address and active 
+            if (user) {
+                throw ({
+                    STATUS_CODE: 409,
+                    message: 'Email id is already in use. Please login with the provided email!'
+                });
+            }
+        })
+        .then(async () => {
             // Since the user doesn't exist, then save the detail
-            console.log(req.body);
-            let user = new User(req.body);
-            user._id = new mongoose.Types.ObjectId(),
-                user.created_date = Date.now(),
-                user.updated_date = Date.now();
-            bcrypt.hash(user.password, 10, (err, result) => {
-                console.log('result of hash', result);
-                user.password = result;
-                user.save().then(registeredUser => {
-                    console.log(registeredUser);
+            try {
+                // if the provided token is valid, save user information and login user
+                const password = await bcrypt.hash(req.body.password, 10);
+                const _user = new User({
+                    _id: new mongoose.Types.ObjectId(),
+                    name: req.body.name,
+                    email: req.body.email,
+                    photo: req.body.photo,
+                    created_date: Date.now(),
+                    updated_date: Date.now(),
+                    password: password
+                });
+                await _user.save().then(registeredUser => {
                     // Send registration successful mail
-                    sendMail(registeredUser);
+                    // sendMail(registeredUser);
                     // GENERATE jwt token with the expiry time
-                    const token = jwt.sign({ email: registeredUser.email, id: registeredUser._id }, process.env.JWT_ACCESS_KEY, { expiresIn: "24h" });
+                    const token = jwt.sign(
+                        { email: registeredUser.email, id: registeredUser._id },
+                        process.env.JWT_ACCESS_KEY,
+                        { expiresIn: "24h" }
+                    );
                     return resp.status(201).json({
                         message: 'User account created successfully.',
                         user: {
@@ -105,20 +111,18 @@ router.post("/signup", async (req, resp) => {
                         },
                         token: token
                     });
-                }).catch(error => {
-                    console.log('error : ', error);
-                    // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
-                    // return resp.status(500).json(error);
-                });
+                })
+            } catch (error) {
+                throw error;
+            }
+        })
+        .catch(error => {
+            // console.log('SIGNUP_ERROR: ', error);
+            resp.status(401).json({
+                message: 'User registration failed.',
+                error: error
             });
-        }
-    }).catch(error => {
-        // console.log('signup error :', error);
-        resp.status(401).json({
-            message: 'User registration failed.',
-            error: error
         });
-    });
 });
 
 // Send Mail function using Nodemailer 

@@ -13,9 +13,9 @@ const _router = (app) => {
     app.use('/timesheets', require('./routes/timesheets'));
     app.use('/purchases', require('./routes/purchases'));
     app.use('/events', require('./routes/events'));
-
+    app.use('/returnings', require('./routes/returnings'));
     app.use('/expenditures', router(require('./models/Expenditures')));
-    app.use('/returnings', router(require('./models/Billing')));
+    // app.use('/returnings', router(require('./models/Billing')));
     /* app.use('/tasks', router(require('./models/Expenditures')));
     app.use('/profile', router(require('./models/Expenditures')));
     app.use('/timesheets', router(require('./models/Expenditures')));

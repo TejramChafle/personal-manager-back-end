@@ -6,7 +6,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /client:
+ * /task:
  *   get:
  *     tags:
  *       - Task
@@ -21,29 +21,18 @@ const router = express.Router();
  */
 // GET tasks (Only active) WITH filter & pagination
 router.get('/', auth, (req, resp) => {
-    /* Task.where({ is_active: true }).exec().then(tasks => {
-        return resp.status(200).json(tasks);
-    }).catch(error => {
-        console.log('error : ', error);
-        // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
-        return resp.status(500).json({
-            error: error
-        });
-    }); */
-
     let filter = {};
-    filter.is_active = req.query.is_active || true;
-    if (req.query.name) filter.name = new RegExp('.*' + req.query.name + '.*', 'i');
-    if (req.query.contact_person) filter.contact_person = req.query.contact_person;
-    if (req.query.phone) filter.phone = new RegExp('.*' + req.query.phone + '.*', 'i');
-    if (req.query.email) filter.email = new RegExp('.*' + req.query.email + '.*', 'i');
-
-    Task.paginate(filter, { sort: { _id: req.query.sort_order }, page: parseInt(req.query.page), limit: parseInt(req.query.limit), populate: ['contact_person', 'created_by', 'updated_by'] }, (error, result) => {
+    // filter.is_active = req.query.is_active || true;
+    if (req.query.title) filter.title = new RegExp('.*' + req.query.title + '.*', 'i');
+    if (req.query.isStarred) filter.isStarred = req.query.isStarred;
+    if (req.query.isImportant) filter.isImportant = req.query.isImportant;
+    if (req.query.isDone) filter.isDone = req.query.isDone;
+    // populate: ['createdBy', 'updatedBy']
+    Task.paginate(filter, { sort: { _id: req.query.sortOrder }, page: parseInt(req.query.page), limit: parseInt(req.query.limit) }, (error, result) => {
         // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
         if (error) return resp.status(500).json({
             error: error
         });
-
         return resp.status(200).json(result);
     });
 });
@@ -51,11 +40,11 @@ router.get('/', auth, (req, resp) => {
 
 /**
  * @swagger
- * /client/{id}:
+ * /task/{id}:
  *   get:
  *     tags:
  *       - Task
- *     description: Returns a single client
+ *     description: Returns a single task
  *     produces:
  *       - application/json
  *     parameters:
@@ -66,13 +55,13 @@ router.get('/', auth, (req, resp) => {
  *         type: string
  *     responses:
  *       200:
- *         description: A single client
+ *         description: A single task
  */
 
-// GET SINGLE CLIENT BY ID
+// GET SINGLE TASK BY ID
 router.get('/:id', auth, (req, resp, next) => {
-    Task.findById(req.params.id).exec().then(client => {
-        return resp.status(200).json(client);
+    Task.findById(req.params.id).exec().then(task => {
+        return resp.status(200).json(task);
     }).catch(error => {
         console.log('error : ', error);
         // 204 : No content. There is no content to send for this request, but the headers may be useful.
@@ -85,15 +74,15 @@ router.get('/:id', auth, (req, resp, next) => {
 
 /**
  * @swagger
- * /client:
+ * /task:
  *   post:
  *     tags:
  *       - Task
- *     description: Creates a new client
+ *     description: Creates a new task
  *     produces:
  *       - application/json
  *     parameters:
- *       - name: client
+ *       - name: task
  *         description: Task object
  *         in: body
  *         required: true
@@ -103,53 +92,32 @@ router.get('/:id', auth, (req, resp, next) => {
  *       201:
  *         description: Task created successfully
  */
-// SAVE CLIENT
+// SAVE TASK
 router.post('/', auth, (req, resp, next) => {
-    // First check if the conact with name and address already exists.
-    Task.findOne({ firstname: req.body.name, address: req.body.address, is_active: true })
-        .exec()
-        .then(client => {
-            // If the client with name and address already exists, then return error
-            if (client) {
-                // 409 : Conflict. The request could not be completed because of a conflict.
-                return resp.status(409).json({
-                    message: "The client with name " + req.body.name + " and address " + req.body.address + " already exist."
-                });
-            } else {
-                // Since the client doesn't exist, then save the detail
-                console.log(req.body);
-                const client = new Task({
-                    _id: new mongoose.Types.ObjectId(),
-                    name: req.body.name,
-                    contact_person: req.body.contact_person,
-                    address: req.body.address,
-                    email: req.body.email,
-                    phone: req.body.phone,
-                    mobile: req.body.mobile,
-                    description: req.body.description,
-                    created_by: req.body.created_by,
-                    updated_by: req.body.updated_by,
-                    created_date: Date.now(),
-                    updated_date: Date.now()
-                });
-
-                client.save()
-                    .then(result => {
-                        console.log(result);
-                        return resp.status(201).json({
-                            message: "Task created successfully",
-                            result: result
-                        });
-                    })
-                    .catch(error => {
-                        console.log('error : ', error);
-                        // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
-                        return resp.status(500).json({
-                            error: error
-                        });
-                    });
-            }
-        }).catch(error => {
+    // console.log(req.body);
+    const task = new Task({
+        _id: new mongoose.Types.ObjectId(),
+        title: req.body.title,
+        notes: req.body.notes,
+        schedule: req.body.schedule,
+        labels: req.body.labels,
+        isStarred: req.body.isStarred,
+        isImportant: req.body.isImportant,
+        isDone: req.body.isDone,
+        createdBy: req.body.createdBy,
+        updatedBy: req.body.createdBy,
+        createdDate: Date.now(req.body.createdDate),
+        updatedDate: Date.now(req.body.createdDate)
+    });
+    task.save()
+        .then(result => {
+            console.log(result);
+            return resp.status(201).json({
+                message: "Task created successfully",
+                result: result
+            });
+        })
+        .catch(error => {
             console.log('error : ', error);
             // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
             return resp.status(500).json({
@@ -160,14 +128,14 @@ router.post('/', auth, (req, resp, next) => {
 
 /**
 * @swagger
-* /client/{id}:
+* /task/{id}:
 *   put:
 *     tags:
 *       - Task
-*     description: Updates a single client
+*     description: Updates a single task
 *     produces: application/json
 *     parameters:
-*       name: client
+*       name: task
 *       in: body
 *       description: Fields for the Task resource
 *       schema:
@@ -177,10 +145,10 @@ router.post('/', auth, (req, resp, next) => {
 *       200:
 *         description: Successfully updated
 */
-// UPDATE CLIENT
+// UPDATE TASK
 router.put('/:id', auth, (req, resp, next) => {
-    Task.findByIdAndUpdate(req.params.id, req.body).exec().then(client => {
-        return resp.status(200).json(client);
+    Task.findByIdAndUpdate(req.params.id, req.body).exec().then(task => {
+        return resp.status(200).json(task);
     }).catch(error => {
         // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
         return resp.status(500).json({
@@ -192,11 +160,11 @@ router.put('/:id', auth, (req, resp, next) => {
 
 /**
  * @swagger
- * /client/{id}:
+ * /task/{id}:
  *   delete:
  *     tags:
  *       - Task
- *     description: Deletes a single client
+ *     description: Deletes a single task
  *     produces:
  *       - application/json
  *     parameters:
@@ -209,10 +177,10 @@ router.put('/:id', auth, (req, resp, next) => {
  *       200:
  *         description: Successfully deleted
  */
-// DELETE CLIENT (Hard delete. This will delete the entire client detail. Only application admin should be allowed to perform this action )
+// DELETE TASK (Hard delete. This will delete the entire task detail. Only application admin should be allowed to perform this action )
 router.delete('/:id', auth, (req, resp, next) => {
-    Task.findByIdAndRemove(req.params.id).exec().then(client => {
-        return resp.status(200).json(client);
+    Task.findByIdAndRemove(req.params.id).exec().then(task => {
+        return resp.status(200).json(task);
     }).catch(error => {
         console.log('error : ', error);
         // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
