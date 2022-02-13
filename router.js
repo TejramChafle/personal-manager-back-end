@@ -5,7 +5,7 @@ const swaggerSpec = require('./swagger');
 const _router = (app) => {
     app.get('/', (req, res) => {
         // console.log('Personal Manager APIs working!');
-        res.send('Personal Manager APIs working!');
+        res.send('Personal Manager APIs working..!');
     });
     app.use('/auth', require('./routes/auth'));
     app.use('/tasks', require('./routes/tasks'));
