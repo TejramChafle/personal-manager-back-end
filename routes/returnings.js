@@ -21,11 +21,11 @@ const router = express.Router();
  */
 // GET returnings (Only active) WITH filter & pagination
 router.get('/', auth, (req, resp) => {
-    // console.log('req.query', req.query);
+    console.log('req.query', req.query);
     let filter = {};
     if (req.query.place) filter.place = new RegExp('.*' + req.query.place + '.*', 'i');
     if (req.query.date) filter.date = req.query.date;
-    if (req.query.created_by) filter.createdBy = req.query.createdBy;
+    if (req.query.createdBy) filter.createdBy = req.query.created_by;
     // console.log({filter});
     Returning.paginate(filter, {
         sort: { createdDate: req.query.sortOrder },

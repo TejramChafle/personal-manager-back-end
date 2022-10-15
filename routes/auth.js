@@ -93,8 +93,22 @@ router.post("/signup", async (req, resp) => {
                     password: password
                 });
                 await _user.save().then(registeredUser => {
+                    // reset password email 
+                    const mailDetails = {
+                        from: process.env.MAIL_ID,
+                        to: req.body.email,
+                        subject: "Registration successful with Personal Manager Application",
+                        text: "Hi " + req.body.name + ",\nThank you for registering on Personal Manager Application\n\n"
+                            + "Please find the authentication detail to login to Personal Manager Application software:\n"
+                            + "URL: https://tejasenterprises.biz\n"
+                            + "Username: " + req.body.email + "\n"
+                            + "Password: " + req.body.credentials.password + "\n\n"
+                            + "If should you change your password, please use forgot password process using above mentioned email id used for username.\n"
+                            + "For any queries, please feel free to write us. We would be happy to help you.\n"
+                            + "Thank you.\n\nRegards, \nSupport Team\nPersonal Manager Application\nhttps://https://ng-personal-manager.web.app\n"
+                    };
                     // Send registration successful mail
-                    // sendMail(registeredUser);
+                    sendMail(mailDetails);
                     // GENERATE jwt token with the expiry time
                     const token = jwt.sign(
                         { email: registeredUser.email, id: registeredUser._id },
@@ -126,46 +140,24 @@ router.post("/signup", async (req, resp) => {
 });
 
 // Send Mail function using Nodemailer 
-async function sendMail(user) {
-    /* let mailTransporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-            user: "info@wizbee.co.in",
-            pass: "working@24"
-        }
-    }); */
-    // Generate test SMTP service account from ethereal.email
-    // Only needed if you don't have a real mail account for testing
-    let testAccount = await nodemailer.createTestAccount();
+async function sendMail(mailDetails) {
     // create reusable transporter object using the default SMTP transport
     let mailTransporter = nodemailer.createTransport({
-        host: "smtp.ethereal.email",
-        port: 587,
-        secure: false, // true for 465, false for other ports
+        host: "gmail",
         auth: {
-            user: testAccount.user, // generated ethereal user
-            pass: testAccount.pass, // generated ethereal password
+            user: process.env.MAIL_ID,
+            pass: process.env.MAIL_PS
         },
     });
-    // Setting credentials 
-    let mailDetails = {
-        from: "contact@hmtrading.biz",
-        to: user.email,
-        subject: "Registration successful",
-        text: "Hi " + user.name + "\nThank you for regestering Personal Manager V3. We welcome you onboard and happy to offer you the wide range of services.\n"
-            + "For any queries, please feel free to write us. We would be happy to help you.\n"
-            + "Thank you.\nRegards, Personal Manager V3\n2305, Silver Oak, Somewhere near road,\nPune\nIndia-411014."
-    };
     // Sending Email 
-    mailTransporter.sendMail(mailDetails,
-        function (err, data) {
+    await mailTransporter.sendMail(mailDetails, ((err, response) => {
             if (err) {
                 console.log("Failed to send an email with error : ", err);
             } else {
-                console.log('Sent signup email result : ', data);
-                console.log("Email sent successfully.");
+                console.log("Email sent successfully.", response);
             }
-        });
+        })
+    );
 }
 
 
