@@ -32,13 +32,10 @@ const client = new OAuth2Client(process.env.CLIENT_ID);
  */
 // USER LOGIN
 router.post("/login", async (req, resp) => {
-    // console.log('User : ', User);
-    // console.log('req.body : ', req.body);
     // CHECK if the email & password matches with the password present in db
     User.findOne({ email: req.body.email, is_active: true }).populate('devices').exec().then(async (user) => {
-        console.log('user found : ', user);
         // Compare the password to match with the password saved in db
-        if (!await user.comparePassword(req.body.password)) {
+        if (!user || !await user.comparePassword(req.body.password)) {
             // 401: Unauthorized. Authentication failed to due mismatch in credentials.
             resp.status(401).json({
                 message: 'Authentication failed. Your email or password is incorrect!'
@@ -67,9 +64,11 @@ router.post("/login", async (req, resp) => {
 
 // USER SIGNUP
 router.post("/signup", async (req, resp) => {
+    // console.log(req.body, req.params);
     // CHECK if the email & password matches with the password present in db
     User.findOne({ email: req.body.email, is_active: true }).populate('user').exec()
         .then(async (user) => {
+            // console.log({user});
             // Throw error if user already exist with provided email address and active 
             if (user) {
                 throw ({
@@ -92,7 +91,9 @@ router.post("/signup", async (req, resp) => {
                     updated_date: Date.now(),
                     password: password
                 });
+                // console.log({user:_user, password: password});
                 await _user.save().then(registeredUser => {
+                    console.log({registeredUser});
                     // reset password email 
                     const mailDetails = {
                         from: process.env.MAIL_ID,
@@ -102,11 +103,12 @@ router.post("/signup", async (req, resp) => {
                             + "Please find the authentication detail to login to Personal Manager Application software:\n"
                             + "URL: https://tejasenterprises.biz\n"
                             + "Username: " + req.body.email + "\n"
-                            + "Password: " + req.body.credentials.password + "\n\n"
+                            + "Password: " + req.body.password + "\n\n"
                             + "If should you change your password, please use forgot password process using above mentioned email id used for username.\n"
                             + "For any queries, please feel free to write us. We would be happy to help you.\n"
                             + "Thank you.\n\nRegards, \nSupport Team\nPersonal Manager Application\nhttps://https://ng-personal-manager.web.app\n"
                     };
+                    // console.log({mailDetails});
                     // Send registration successful mail
                     sendMail(mailDetails);
                     // GENERATE jwt token with the expiry time
@@ -115,6 +117,7 @@ router.post("/signup", async (req, resp) => {
                         process.env.JWT_ACCESS_KEY,
                         { expiresIn: "24h" }
                     );
+                    // console.log({token});
                     return resp.status(201).json({
                         message: 'User account created successfully.',
                         user: {
@@ -131,10 +134,10 @@ router.post("/signup", async (req, resp) => {
             }
         })
         .catch(error => {
-            // console.log('SIGNUP_ERROR: ', error);
-            resp.status(401).json({
+            console.log('SIGNUP_ERROR: ', error);
+            resp.status(error.STATUS_CODE || 401).json({
                 message: 'User registration failed.',
-                error: error
+                error: error.message || error
             });
         });
 });

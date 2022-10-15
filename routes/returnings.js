@@ -25,15 +25,15 @@ router.get('/', auth, (req, resp) => {
     let filter = {};
     if (req.query.place) filter.place = new RegExp('.*' + req.query.place + '.*', 'i');
     if (req.query.date) filter.date = req.query.date;
-    if (req.query.createdBy) filter.createdBy = req.query.created_by;
-    // console.log({filter});
+    if (req.query.createdBy) filter.created_by = req.query.createdBy;
+    console.log({filter});
     Returning.paginate(filter, {
         sort: { createdDate: req.query.sortOrder },
         page: parseInt(req.query.page),
         limit: parseInt(req.query.limit)
     }, (error, result) => {
         // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
-        // console.log('result', result);
+        console.log('result', result);
         if (error) {
             // console.log('error', error);
             return resp.status(500).json({
