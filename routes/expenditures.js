@@ -27,17 +27,19 @@ router.get('/', auth, (req, resp) => {
     filter.isActive = req.query.isActive || true;
     if (req.query.place) filter.place = new RegExp('.*' + req.query.place + '.*', 'i');
     if (req.query.date) filter.date = req.query.date;
+    // if (req.query.amount) filter.amount = req.query.amount;
     if (req.query.createdBy) filter.createdBy = req.query.createdBy;
-    filter.payment = { $exists: true, $ne: null};
+    filter.payment = { $exists: true, $ne: null };
     // filter.payment = { 'payment.method': 'PayTM' };
-    Expenditures.paginate(filter,{
+    console.log({ filter });
+    Expenditures.paginate(filter, {
         // select: { 'payment': { $exists: true, $ne: null } },
         sort: { createdDate: req.query.sortOrder },
         page: parseInt(req.query.page),
         limit: parseInt(req.query.limit),
         // populate: { path: 'payment', match: { method: 'Google Pay' } }
         populate: { path: 'payment', match: {} }
-    },(error, result) => {
+    }, (error, result) => {
         // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
         console.log('result', result);
         if (error) {
@@ -73,20 +75,17 @@ router.get('/', auth, (req, resp) => {
 // SAVE EXPENDITURE
 router.post('/', auth, (req, resp, next) => {
     console.log(req.body);
-    const payinfo = req.body.payment;
-    const medadata = {
-        createdBy: req.body.createdBy,
-        createdDate: new Date(),
-        updatedDate: new Date()
-    }
+    // const payinfo = req.body.payment;
     const payment = new Payments({
         _id: new mongoose.Types.ObjectId(),
-        ...payinfo,
-        ...medadata
+        createdBy: req.body.createdBy,
+        // ...payinfo
+        ...req.body.payment
     });
     console.log('payment input ', payment);
+    delete req.body.payment;
     payment.save().then(result => {
-        console.log('expenditure result', result);
+        console.log('payment result', result);
         const expenditures = new Expenditures({
             _id: new mongoose.Types.ObjectId(),
             payment: result._id,

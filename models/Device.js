@@ -32,22 +32,11 @@ const DeviceSchema = new mongoose.Schema({
         type: String,
         required: false
     },
-    firebase_token: {
+    token: {
         type: String,
         required: false
-    },
-    // date & time of record creation
-    created_date: {
-        type: Date,
-        required: true
-    },
-    // last date & time of record updation
-    updated_date: {
-        type: Date,
-        default: Date.now,
-        required: true
     }
-});
+}, { timestamps: true });
 
 DeviceSchema.plugin(Paginate);
 const Device = module.exports = mongoose.model('Device', DeviceSchema);

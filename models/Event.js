@@ -13,47 +13,36 @@ const EventSchema = new mongoose.Schema({
         required: false
     },
     // start time
-    start_time: {
+    startTime: {
         type: Date,
         required: false
     },
     // end time
-    end_time: {
+    endTime: {
         type: Date,
         required: false
     },
     // month loop will help to identify if the event will happen on every month on same date & time
-    month_loop: {
+    monthLoop: {
         type: Boolean,
         default: true
     },
     // Flag to indicate the all day event
-    all_day: {
+    allDay: {
         type: Boolean,
         default: true
     },
     // soft delete flag
-    is_active: {
+    isActive: {
         type: Boolean,
         default: true
     },
     // created by user id
-    created_by: {
+    createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
-    },
-    // date & time of record creation
-    created_date: {
-        type: Date,
-        required: true
-    },
-    // last date & time of record updation
-    updated_date: {
-        type: Date,
-        default: Date.now,
-        required: true
     }
-});
+}, { timestamps: true });
 
 const Event = module.exports = mongoose.model('Event', EventSchema);

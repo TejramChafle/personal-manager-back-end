@@ -35,19 +35,8 @@ const ExpendituresSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
-    },
-    // date & time of record creation
-    createdDate: {
-        type: Date,
-        required: true
-    },
-    // last date & time of record updation
-    updatedDate: {
-        type: Date,
-        default: Date.now,
-        required: true
     }
-});
+}, { timestamps: true });
 
 ExpendituresSchema.plugin(Paginate);
 const Expenditures = module.exports = mongoose.model('Expenditures', ExpendituresSchema);

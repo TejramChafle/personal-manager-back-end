@@ -27,7 +27,7 @@ const UserSchema = mongoose.Schema({
         required: false
     },
     // soft delete flag
-    is_active: {
+    isActive: {
         type: Boolean,
         default: true
     },
@@ -40,19 +40,8 @@ const UserSchema = mongoose.Schema({
     photo: {
         type: String,
         required: false
-    },
-    // date & time of record creation
-    created_date: {
-        type: Date,
-        required: true
-    },
-    // last date & time of record updation
-    updated_date: {
-        type: Date,
-        default: Date.now,
-        required: true
     }
-});
+}, { timestamps: true });
 
 // compare encrypted password with the password saved in db
 UserSchema.methods.comparePassword = function (password) {

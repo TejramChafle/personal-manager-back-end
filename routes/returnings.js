@@ -21,19 +21,23 @@ const router = express.Router();
  */
 // GET returnings (Only active) WITH filter & pagination
 router.get('/', auth, (req, resp) => {
-    console.log('req.query', req.query);
+    // console.log('req.query', req.query);
     let filter = {};
-    if (req.query.place) filter.place = new RegExp('.*' + req.query.place + '.*', 'i');
+    if (req.query.person) filter.person = new RegExp('.*' + req.query.person + '.*', 'i');
+    if (req.query.type) filter.type = req.query.type;
+    if (req.query.amount) filter.amount = req.query.amount;
     if (req.query.date) filter.date = req.query.date;
-    if (req.query.createdBy) filter.created_by = req.query.createdBy;
-    console.log({filter});
+    if (req.query.expectedReturnDate) filter.expectedReturnDate = req.query.expectedReturnDate;
+    if (req.query.paymentMethod) filter.paymentMethod = req.query.paymentMethod;
+    if (req.query.createdBy) filter.createdBy = req.query.createdBy;
+    // console.log({filter});
     Returning.paginate(filter, {
         sort: { createdDate: req.query.sortOrder },
         page: parseInt(req.query.page),
         limit: parseInt(req.query.limit)
     }, (error, result) => {
         // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
-        console.log('result', result);
+        // console.log('result', result);
         if (error) {
             // console.log('error', error);
             return resp.status(500).json({
@@ -111,10 +115,7 @@ router.post('/', auth, (req, resp, next) => {
         person: req.body.person,
         purpose: req.body.purpose,
         type: req.body.type,
-        created_by: req.body.createdBy,
-        updated_by: req.body.createdBy,
-        created_date: req.body.createdDate,
-        updated_date: req.body.createdDate
+        createdBy: req.body.createdBy
     });
     returning.save()
     .then(result => {

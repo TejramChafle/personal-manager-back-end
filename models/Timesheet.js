@@ -21,12 +21,6 @@ var TimesheetSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
-    },
-    // last updated by user id
-    updatedBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
     }
 }, { timestamps: true });
 

@@ -31,7 +31,6 @@ router.get('/', auth, (req, resp) => {
     // if (req.query.place) filter.place = new RegExp('.*' + req.query.place + '.*', 'i');
     // if (req.query.date) filter.date = new Date(req.query.date);
     if (req.query.createdBy) filter.createdBy = req.query.createdBy;
-    
     if (req.query.purpose) expenditurefilter.purpose = req.query.purpose;
     if (req.query.place) expenditurefilter.place = new RegExp('.*' + req.query.place + '.*', 'i');
     if (req.query.amount) expenditurefilter.amount = req.query.amount;
@@ -228,7 +227,6 @@ router.put('/:id', auth, async(req, resp, next) => {
         const payment = new Payments({
             _id: new mongoose.Types.ObjectId(),
             ...req.body.payment,
-            createdDate: req.body.updatedDate,
             createdBy: req.body.createdBy
         });
         await payment.save().then(result => {

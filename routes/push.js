@@ -40,9 +40,7 @@ router.post('/save-device-information', auth, (req, resp) => {
     console.log(req.body);
     const device = new Device({
         _id: new mongoose.Types.ObjectId(),
-        ...req.body,
-        created_date: Date.now(),
-        updated_date: Date.now()
+        ...req.body
     });
 
     device.save().then(result => {
@@ -164,7 +162,7 @@ sendEventNotifications = () => {
     Event.find({start_time: {$gt: from_time, $lt: to_time }}).exec().then(async (events) => {
         if (Array.isArray(events)) {
             events.forEach((event) => {
-                Device.find({user: event.created_by}).exec().then(async (devices) => {
+                Device.find({user: event.createdBy}).exec().then(async (devices) => {
                     // Send the notification of the event to the provided devices
                     sendNotifications({
                         devices: devices,

@@ -33,29 +33,12 @@ const ReturningSchema = new mongoose.Schema({
         required: true
     },
     // created by user id
-    created_by: {
+    createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true
-    },
-    // last updated by user id
-    updated_by: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    },
-    // date & time of record creation
-    created_date: {
-        type: Date,
-        required: true
-    },
-    // last date & time of record updation
-    updated_date: {
-        type: Date,
-        default: Date.now,
         required: true
     }
-});
+}, { timestamps: true });
 
 ReturningSchema.plugin(Paginate);
 const Returning = module.exports = mongoose.model('Returning', ReturningSchema);

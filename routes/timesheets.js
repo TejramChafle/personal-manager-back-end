@@ -22,6 +22,8 @@ const router = express.Router();
 // GET timesheets (Only active)
 router.get('/', auth, (req, resp) => {
     let filter = {};
+    if (req.query.date) filter.date = req.query.date;
+    if (req.query.createdBy) filter.createdBy = req.query.createdBy;
     Timesheet.paginate(filter, { sort: { _id: req.query.sort_order }, page: parseInt(req.query.page), limit: parseInt(req.query.limit), populate: ['tasks', 'createdBy', 'updatedBy'] }, (error, result) => {
         // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
         if (error) return resp.status(500).json({
