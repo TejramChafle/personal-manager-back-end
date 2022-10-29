@@ -27,6 +27,7 @@ router.get('/', auth, (req, resp) => {
     if (req.query.isStarred) filter.isStarred = req.query.isStarred;
     if (req.query.isImportant) filter.isImportant = req.query.isImportant;
     if (req.query.isDone) filter.isDone = req.query.isDone;
+    if (req.query.createdBy) filter.createdBy = req.query.createdBy;
     // populate: ['createdBy', 'updatedBy']
     Task.paginate(filter, { sort: { _id: req.query.sortOrder }, page: parseInt(req.query.page), limit: parseInt(req.query.limit) }, (error, result) => {
         // 500 : Internal Sever Error. The request was not completed. The server met an unexpected condition.
