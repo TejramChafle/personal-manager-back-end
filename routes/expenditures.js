@@ -34,7 +34,7 @@ router.get('/', auth, (req, resp) => {
     console.log({ filter });
     Expenditures.paginate(filter, {
         // select: { 'payment': { $exists: true, $ne: null } },
-        sort: { createdDate: req.query.sortOrder },
+        sort: { _id: req.query.sortOrder },
         page: parseInt(req.query.page),
         limit: parseInt(req.query.limit),
         // populate: { path: 'payment', match: { method: 'Google Pay' } }

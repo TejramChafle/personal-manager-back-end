@@ -24,12 +24,10 @@ const handler = require('../helper/handler');
  */
 // GET PURCHASES (Only active) WITH filter & pagination
 router.get('/', auth, (req, resp) => {
-    console.log('req.query', req.query);
+    // console.log('req.query', req.query);
     let filter = {};
     let expenditurefilter = {};
     filter.isActive = req.query.isActive || true;
-    // if (req.query.place) filter.place = new RegExp('.*' + req.query.place + '.*', 'i');
-    // if (req.query.date) filter.date = new Date(req.query.date);
     if (req.query.createdBy) filter.createdBy = req.query.createdBy;
     if (req.query.purpose) expenditurefilter.purpose = req.query.purpose;
     if (req.query.place) expenditurefilter.place = new RegExp('.*' + req.query.place + '.*', 'i');
@@ -40,9 +38,9 @@ router.get('/', auth, (req, resp) => {
         filter.expenditure = { $exists: true, $ne: null};
     }
 
-    console.log('expenditurefilter', expenditurefilter, "Object.values(expenditurefilter)", Object.values(expenditurefilter));
+    // console.log('expenditurefilter', expenditurefilter, "Object.values(expenditurefilter)", Object.values(expenditurefilter));
     Purchases.paginate(filter,{
-        sort: { createdDate: req.query.sortOrder },
+        sort: { _id: req.query.sortOrder },
         page: parseInt(req.query.page),
         limit: parseInt(req.query.limit),
         populate: ({ path: 'expenditure', model: 'Expenditures', match: { ...expenditurefilter }, populate: { path: 'payment', model: 'Payments'} })
